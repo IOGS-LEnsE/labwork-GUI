@@ -67,47 +67,51 @@ class Camera_Widget(QWidget):
         self.timerUpdate = QTimer()
         self.frameWidth = self.cameraDisplay.width()
         self.frameHeight = self.cameraDisplay.height()
+        print(f'W={self.frameWidth} - H={self.frameHeight}')
 
     def launchVideo(self):
         """
         Method used to launch the video.
         """
-        #print(f'T = {1.0/self.camera.get_frame_rate()} s')
-        self.timerUpdate.timeout.connect(self.refreshGraph)
-        '''
         self.timerUpdate.setInterval(int(self.camera.get_frame_rate()))
-        '''
-        self.timerUpdate.start(100)    
+        self.timerUpdate.timeout.connect(self.refreshGraph)
+        self.timerUpdate.start()    
 
     def refreshGraph(self):
         """
         Method used to refresh the graph for the image display.
         """
-        self.cameraArray = self.camera.get_image()
+        self.cameraRawArray = self.camera.get_image()
 
         AOIX, AOIY, AOIWidth, AOIHeight = self.camera.get_aoi()
 
         # On teste combien d'octets par pixel
-        if(self.bytes_per_pixel == 2):
+        if(self.bytes_per_pixel >= 2):
             # on créée une nouvelle matrice en 16 bits / C'est celle-ci qui compte pour les graphiques temporelles et les histogrammes
-            self.cameraArray = self.cameraArray.view(np.uint16)
-            # on calcule la puissance de 2 restante à multiplier pour le passage en 16 bits (car affichage en 16 bits par opencv)
-            pow2 = 16 - self.nBitsPerPixel
+            self.cameraFrame = self.cameraRawArray.view(np.uint16)
+            self.cameraFrame = np.reshape(self.cameraFrame, (AOIHeight, AOIWidth, -1))
+            
             # on génère une nouvelle matrice spécifique à l'affichage.
-            self.cameraArray = self.cameraArray 
-
-        # On retaille si besoin à la taille de la fenètre
-        self.cameraFrame = np.reshape(self.cameraArray, (AOIHeight, AOIWidth, -1))
-        self.cameraFrame = cv2.resize(self.cameraFrame,(0,0),fx=0.5, fy=0.5)
-        
-        # Convert the frame into an image
-        image = QImage(self.cameraFrame, self.cameraFrame.shape[1], self.cameraFrame.shape[0], self.cameraFrame.shape[1], QImage.Format_Indexed8)
-        pmap = QPixmap(image)
+            cameraFrame8b = self.cameraFrame / (2**(self.nBitsPerPixel-8))
+            self.cameraArray = cameraFrame8b.astype(np.uint8)    
+        else:
+            self.cameraFrame = self.cameraRawArray.view(np.uint8)
+            self.cameraArray = self.cameraFrame
 
         # Resize the Qpixmap at the great size
         widgetWidth, widgetHeight = self.widgetGeometry()
-        pmap = pmap.scaled(widgetWidth, int(widgetHeight*7/8), Qt.KeepAspectRatio)
         
+        # On retaille si besoin à la taille de la fenètre
+        self.cameraDisp = np.reshape(self.cameraArray, (AOIHeight, AOIWidth, -1))
+        self.cameraDisp = cv2.resize(self.cameraDisp, dsize=(self.frameWidth, self.frameHeight), interpolation=cv2.INTER_CUBIC)
+        
+        # Convert the frame into an image
+        image = QImage(self.cameraDisp, self.cameraDisp.shape[1], self.cameraDisp.shape[0], self.cameraDisp.shape[1], QImage.Format_Indexed8)
+        pmap = QPixmap(image)
+
+        # display it in the cameraDisplay
+        self.cameraDisplay.setPixmap(pmap)
+
         # "plot" it in the cameraDisplay
         self.cameraDisplay.setPixmap(pmap)
 
@@ -153,6 +157,8 @@ class Camera_Widget(QWidget):
         
         self.max_width = int(self.camera.get_sensor_max_width())
         self.max_height = int(self.camera.get_sensor_max_height())
+
+        self.camera.set_exposure(100)
         
         if self.colormode == "MONO8":
             self.m_nColorMode = ueye.IS_CM_MONO8
@@ -200,15 +206,6 @@ class Camera_Widget(QWidget):
 
         self.camera.alloc()
         self.camera.capture_video()
-
-
-        self.camera.set_frame_rate(20)
-        self.min_expo, self.max_expo = self.camera.get_exposure_range()
-        print(f'MAX = {self.max_expo}')
-        self.camera.set_exposure((self.max_expo - self.min_expo)/2)
-        
-        print(f'EXPO = {self.camera.get_exposure()}')
-        print(f'FPS = {self.camera.get_frame_rate()}')
 
         # There is a way to set the initial minimumValue of the exposure as near as possible from the original minimumValue of the
         # camera, for any camera
@@ -429,7 +426,7 @@ class MyWindow(QMainWindow):
         self.setWindowTitle("Camera Window")
         self.setGeometry(100, 100, 400, 300)
 
-        widget = Camera_Widget(colormode = "MONO8")
+        widget = Camera_Widget(colormode = "MONO10")
         widget.connectCamera()
         widget.launchVideo()
 

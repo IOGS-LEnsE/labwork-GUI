@@ -245,21 +245,11 @@ class Chart_Widget(QWidget):
 #-------------------------------------------------------------------------------------------------------
 
 # Launching as main for tests
-
-import random
-
 if __name__ == "__main__":
     App = QApplication(sys.argv)
 
     window = Chart_Widget()
     window.show()
-    window.startMethod()
-    cpt = 0
-    while(cpt < 1):
-        new_points = random.randrange(255)
-        window.addOrdinatesPoints([new_points, new_points, new_points, new_points], 4)
-        cpt += 1
-        
 
     sys.exit(App.exec())
     

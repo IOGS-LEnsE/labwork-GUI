@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import time
+
 
 #   Libraries to import
 # Camera
@@ -10,6 +12,7 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QGridLayout, QComboBox, QSlider, QLineEdit
     )
 from PyQt5.QtGui import QPixmap, QImage
+from pyqtgraph import PlotWidget, plot, mkPen
 
 # Standard
 import numpy as np
@@ -67,49 +70,52 @@ class Camera_Widget(QWidget):
         self.timerUpdate = QTimer()
         self.frameWidth = self.cameraDisplay.width()
         self.frameHeight = self.cameraDisplay.height()
-
-    def launchVideo(self):
-        """
-        Method used to launch the video.
-        """
-        #print(f'T = {1.0/self.camera.get_frame_rate()} s')
-        self.timerUpdate.timeout.connect(self.refreshGraph)
-        '''
-        self.timerUpdate.setInterval(int(self.camera.get_frame_rate()))
-        '''
-        self.timerUpdate.start(100)    
+        print(f'W={self.frameWidth} - H={self.frameHeight}')
+        self.start = time.time()
+  
 
     def refreshGraph(self):
         """
         Method used to refresh the graph for the image display.
         """
-        self.cameraArray = self.camera.get_image()
+        self.start2 = time.time()
+        print(f'FPS={self.camera.get_frame_rate()}')
+        print(f'T1 = {self.start2 - self.start} s')
+        self.cameraRawArray = self.camera.get_image()
 
         AOIX, AOIY, AOIWidth, AOIHeight = self.camera.get_aoi()
 
         # On teste combien d'octets par pixel
-        if(self.bytes_per_pixel == 2):
+        if(self.bytes_per_pixel >= 2):
             # on créée une nouvelle matrice en 16 bits / C'est celle-ci qui compte pour les graphiques temporelles et les histogrammes
-            self.cameraArray = self.cameraArray.view(np.uint16)
-            # on calcule la puissance de 2 restante à multiplier pour le passage en 16 bits (car affichage en 16 bits par opencv)
-            pow2 = 16 - self.nBitsPerPixel
+            self.cameraFrame = self.cameraRawArray.view(np.uint16)
+            self.cameraFrame = np.reshape(self.cameraFrame, (AOIHeight, AOIWidth, -1))
+            
             # on génère une nouvelle matrice spécifique à l'affichage.
-            self.cameraArray = self.cameraArray 
-
-        # On retaille si besoin à la taille de la fenètre
-        self.cameraFrame = np.reshape(self.cameraArray, (AOIHeight, AOIWidth, -1))
-        self.cameraFrame = cv2.resize(self.cameraFrame,(0,0),fx=0.5, fy=0.5)
-        
-        # Convert the frame into an image
-        image = QImage(self.cameraFrame, self.cameraFrame.shape[1], self.cameraFrame.shape[0], self.cameraFrame.shape[1], QImage.Format_Indexed8)
-        pmap = QPixmap(image)
+            cameraFrame8b = self.cameraFrame / (2**(self.nBitsPerPixel-8))
+            self.cameraArray = cameraFrame8b.astype(np.uint8)    
+        else:
+            self.cameraFrame = self.cameraRawArray.view(np.uint8)
+            self.cameraArray = self.cameraFrame
 
         # Resize the Qpixmap at the great size
         widgetWidth, widgetHeight = self.widgetGeometry()
-        pmap = pmap.scaled(widgetWidth, int(widgetHeight*7/8), Qt.KeepAspectRatio)
         
-        # "plot" it in the cameraDisplay
+        # On retaille si besoin à la taille de la fenètre
+        self.cameraDisp = np.reshape(self.cameraArray, (AOIHeight, AOIWidth, -1))
+        self.cameraDisp = cv2.resize(self.cameraDisp, dsize=(self.frameWidth, self.frameHeight), interpolation=cv2.INTER_CUBIC)
+        
+        # Convert the frame into an image
+        image = QImage(self.cameraDisp, self.cameraDisp.shape[1], self.cameraDisp.shape[0], self.cameraDisp.shape[1], QImage.Format_Indexed8)
+        pmap = QPixmap(image)
+
+        # display it in the cameraDisplay
         self.cameraDisplay.setPixmap(pmap)
+
+        # "plot" it in the cameraDisplay
+        self.cameraDisplay.setPixmap(pmap)        
+        self.start = time.time()
+        print(f'Tref = {self.start - self.start2} s')
 
     def check_second_element(self, arr):
         # Check if the second element of each [a, b] pair is equal to 0
@@ -153,6 +159,10 @@ class Camera_Widget(QWidget):
         
         self.max_width = int(self.camera.get_sensor_max_width())
         self.max_height = int(self.camera.get_sensor_max_height())
+        
+        self.camera.set_frame_rate(10)
+        self.min_expo, self.max_expo = self.camera.get_exposure_range()
+        self.camera.set_exposure(self.max_expo / 2)
         
         if self.colormode == "MONO8":
             self.m_nColorMode = ueye.IS_CM_MONO8
@@ -198,24 +208,17 @@ class Camera_Widget(QWidget):
         
         self.camera.set_aoi(0, 0, self.max_width-1, self.max_height-1)
 
-        self.camera.alloc()
-        self.camera.capture_video()
-
-
-        self.camera.set_frame_rate(20)
-        self.min_expo, self.max_expo = self.camera.get_exposure_range()
-        print(f'MAX = {self.max_expo}')
-        self.camera.set_exposure((self.max_expo - self.min_expo)/2)
-        
-        print(f'EXPO = {self.camera.get_exposure()}')
-        print(f'FPS = {self.camera.get_frame_rate()}')
-
         # There is a way to set the initial minimumValue of the exposure as near as possible from the original minimumValue of the
         # camera, for any camera
 
         self.setLayout(self.layout)
+        
+    def startVideo(self):
+        self.camera.alloc()
+        self.camera.capture_video()
         self.refreshGraph()
-
+        
+    
     def generateExpositionRangeList(self, pointsNumber):
         """
         Method used to create a list of pointsNumber points in the range of the camera's exposition.
@@ -264,12 +267,17 @@ class Camera_Widget(QWidget):
         Returns:
             list: list of the value of the four points.
         """
+        print(type(self.cameraFrame))
+        print(self.cameraFrame.shape)
+        '''
         height, width = self.cameraFrame.shape
         value1 = self.cameraFrame[width // 2 + 10][height // 2]
         value2 = self.cameraFrame[width // 2 - 10][height // 2]
         value3 = self.cameraFrame[width // 2][height // 2 + 10]
         value4 = self.cameraFrame[width // 2][height // 2 - 10]
         return [value1, value2, value3, value4]
+        '''
+        return [0, 0, 0, 0]
 
 
     def launchAOI(self, AOIX, AOIY, AOIWidth, AOIHeight, type = None):
@@ -332,6 +340,8 @@ class Camera_Widget(QWidget):
             self.setStyleSheet("background-color: #c55a11; border-radius: 10px;"
                            "border-color: black; border-width: 2px; font: bold 12px; padding: 20px;"
                            "border-style: solid;")
+    
+
 
 #-----------------------------------------------------------------------------------------------
 
@@ -422,18 +432,67 @@ class Setting_Widget_Float(QWidget):
 
 #-----------------------------------------------------------------------------------------------
 
+import time
+
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        
+        self.timerUpdate = QTimer()
 
         self.setWindowTitle("Camera Window")
         self.setGeometry(100, 100, 400, 300)
+        
+        self.centralWid = QWidget()
+        self.layout = QGridLayout()
+        
+        '''Camera'''
+        self.widget = Camera_Widget(colormode = "MONO10")
+        self.widget.connectCamera()
+        start = time.time()
+        self.widget.startVideo()
+        self.widget.refreshGraph()
+        self.layout.addWidget(self.widget, 0, 0)
+        
+        '''Histo'''
+        self.plotSignalWidget = PlotWidget(title='Histo ')  
+        self.plotHist = self.plotSignalWidget.plot([0])
+        self.layout.addWidget(self.plotSignalWidget, 0, 1)
+        
+        '''Global'''
+        self.centralWid.setLayout(self.layout)
+        self.setCentralWidget(self.centralWid)
 
-        widget = Camera_Widget(colormode = "MONO8")
-        widget.connectCamera()
-        widget.launchVideo()
+        end = time.time()
+        print(f'T={end - start}')
+        
+        self.launchVideo()
 
-        self.setCentralWidget(widget)
+    def createChart(self):
+        st = time.time()
+        vals = self.widget.getGraphValues()
+        self.bins = np.linspace(0, 1024)
+        hist, bins = np.histogram(self.widget.cameraRawArray, bins=self.bins)
+        print(self.widget.cameraRawArray.shape)
+        print(type(hist))
+        self.plotSignalWidget.removeItem(self.plotHist)
+        self.plotHist = self.plotSignalWidget.plot(hist, bins)
+                
+        en = time.time()
+        print(f'Tchart = {en-st} s')
+
+    def launchVideo(self):
+        """
+        Method used to launch the video.
+        """
+        self.timerUpdate.setInterval(100)
+        self.timerUpdate.timeout.connect(self.refreshApp)
+        self.timerUpdate.start()  
+        
+    def refreshApp(self):
+        self.widget.refreshGraph()
+        self.createChart()
+
 
 #-----------------------------------------------------------------------------------------------
 

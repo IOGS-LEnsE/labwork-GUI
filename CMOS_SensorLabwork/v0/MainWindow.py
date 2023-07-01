@@ -40,7 +40,7 @@ class MainWidget(QWidget):
         self.setStyleSheet("background: #f2f2f2;")
 
         # Choosing the optimate value for the measurement
-        self.measurementInterval = 10 # DOIT DEPENDRE DE FPS !!!
+        self.measurementInterval = 300
 
         # Tested values
         # 100  => 1.35s      |      325  => 1s
@@ -49,7 +49,7 @@ class MainWidget(QWidget):
         # 300  => 0.95s      |      1000 => 2s  
 
         # Create the several widgets
-        self.cameraWidget = Camera_Widget(colormode = "MONO8")
+        self.cameraWidget = Camera_Widget(colormode = "MONO12")
         self.chartWidget = Chart_Widget(measurementInterval = self.measurementInterval)
         self.settingsWidget = Settings_Widget()
         self.cameraHistogramWidget = Histogram_Widget(histogramTitle = "Camera's histogram", FrameOrLists =  "frame", measurementInterval = self.measurementInterval)
@@ -141,7 +141,7 @@ class MainWidget(QWidget):
 
         # Initialisation of the BlackLevel setting
         self.sensorSettingsWidget.blackLevel.slider.setMinimum(0)
-        self.sensorSettingsWidget.blackLevel.slider.setMaximum(255)
+        self.sensorSettingsWidget.blackLevel.slider.setMaximum(256)
         self.sensorSettingsWidget.blackLevel.setValue(int(self.cameraWidget.camera.get_black_level())) # camera's blacklevel
 
         self.sensorSettingsWidget.blackLevel.slider.valueChanged.connect(
@@ -163,7 +163,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # Variables
-        self.oneOrFour = 1
+        self.oneOrFour = 4
 
         # Define Window title
         self.setWindowTitle("TP : Étude d'un capteur CMOS industriel")
@@ -239,16 +239,10 @@ class MainWindow(QMainWindow):
         toolbarMainWindow.addWidget(oneOrFourButton)
 
         # Launching the update methods
-        #self.mainWidget.cameraHistogramWidget.timerUpdate.timeout.connect(self.updateCharts)
         self.mainWidget.cameraHistogramWidget.timerUpdate.timeout.connect(self.updateCameraHistogram)
         self.mainWidget.chartWidget.timerUpdate.timeout.connect(self.updateChart)
         self.mainWidget.chartHistogramWidget.timerUpdate.timeout.connect(self.updateChartHistogram)
 
-    def updateCharts(self):
-        self.updateCameraHistogram()
-        self.updateChartHistogram()
-        self.updateChart()
-    
     def updateCameraHistogram(self):
         """
         Update the camera's histogram with the new values.
