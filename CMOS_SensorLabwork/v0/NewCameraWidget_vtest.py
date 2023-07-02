@@ -88,15 +88,15 @@ class Camera_Widget(QWidget):
         # On teste combien d'octets par pixel
         if(self.bytes_per_pixel >= 2):
             # on créée une nouvelle matrice en 16 bits / C'est celle-ci qui compte pour les graphiques temporelles et les histogrammes
-            self.cameraFrame = self.cameraRawArray.view(np.uint16)
-            self.cameraFrame = np.reshape(self.cameraFrame, (AOIHeight, AOIWidth, -1))
+            self.cameraRawFrame = self.cameraRawArray.view(np.uint16)
+            self.cameraFrame = np.reshape(self.cameraRawFrame, (AOIHeight, AOIWidth, -1))
             
             # on génère une nouvelle matrice spécifique à l'affichage.
             cameraFrame8b = self.cameraFrame / (2**(self.nBitsPerPixel-8))
             self.cameraArray = cameraFrame8b.astype(np.uint8)    
         else:
-            self.cameraFrame = self.cameraRawArray.view(np.uint8)
-            self.cameraArray = self.cameraFrame
+            self.cameraRawFrame = self.cameraRawArray.view(np.uint8)
+            self.cameraArray = self.cameraRawFrame
 
         # Resize the Qpixmap at the great size
         widgetWidth, widgetHeight = self.widgetGeometry()
@@ -267,17 +267,12 @@ class Camera_Widget(QWidget):
         Returns:
             list: list of the value of the four points.
         """
-        print(type(self.cameraFrame))
-        print(self.cameraFrame.shape)
-        '''
-        height, width = self.cameraFrame.shape
+        height, width, depth = self.cameraFrame.shape
         value1 = self.cameraFrame[width // 2 + 10][height // 2]
         value2 = self.cameraFrame[width // 2 - 10][height // 2]
         value3 = self.cameraFrame[width // 2][height // 2 + 10]
         value4 = self.cameraFrame[width // 2][height // 2 - 10]
         return [value1, value2, value3, value4]
-        '''
-        return [0, 0, 0, 0]
 
 
     def launchAOI(self, AOIX, AOIY, AOIWidth, AOIHeight, type = None):
@@ -435,29 +430,40 @@ class Setting_Widget_Float(QWidget):
 import time
 
 class MyWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, colormode="MONO8"):
         super().__init__()
         
         self.timerUpdate = QTimer()
 
         self.setWindowTitle("Camera Window")
-        self.setGeometry(100, 100, 400, 300)
+        self.setGeometry(100, 100, 800, 600)
         
         self.centralWid = QWidget()
         self.layout = QGridLayout()
         
         '''Camera'''
-        self.widget = Camera_Widget(colormode = "MONO10")
+        self.widget = Camera_Widget(colormode = colormode)
         self.widget.connectCamera()
         start = time.time()
         self.widget.startVideo()
         self.widget.refreshGraph()
         self.layout.addWidget(self.widget, 0, 0)
         
-        '''Histo'''
-        self.plotSignalWidget = PlotWidget(title='Histo ')  
-        self.plotHist = self.plotSignalWidget.plot([0])
-        self.layout.addWidget(self.plotSignalWidget, 0, 1)
+        '''Frame Histo'''
+        self.plotFrameHistWidget = PlotWidget(title='Frame Histo')  
+        self.plotFrameHist = self.plotFrameHistWidget.plot([0])
+        self.layout.addWidget(self.plotFrameHistWidget, 1, 0)
+        
+        '''Pixels Histo'''
+        self.plotPixelsHistWidget = PlotWidget(title='Pixels Histo') 
+        self.plotPixelsHist = self.plotPixelsHistWidget.plot([0])
+        self.layout.addWidget(self.plotPixelsHistWidget, 1, 1)
+        
+        '''Pixels Chart'''
+        self.pixelsArr = np.array([])
+        self.plotPixelsTimeWidget = PlotWidget(title='Pixels Time Chart') 
+        self.plotPixelsTime = self.plotPixelsTimeWidget.plot([0])
+        self.layout.addWidget(self.plotPixelsTimeWidget, 0, 1)
         
         '''Global'''
         self.centralWid.setLayout(self.layout)
@@ -470,13 +476,28 @@ class MyWindow(QMainWindow):
 
     def createChart(self):
         st = time.time()
+        '''Global Camera Histogram'''
+        max_bins = 2**int(self.widget.nBitsPerPixel)
+        self.bins = np.linspace(0, max_bins, max_bins+1)
+        hist, bins = np.histogram(self.widget.cameraRawFrame, bins=self.bins)
+        print(self.widget.cameraRawFrame.shape)
+        print(f'H0={hist[0]}')
+        print(f'H1={hist[1]}')
+        print(f'MIN_cam={np.min(self.widget.cameraRawFrame)}')
+        print(f'MAX_cam={np.max(self.widget.cameraRawFrame)}')
+        self.plotFrameHistWidget.removeItem(self.plotFrameHist)
+        self.plotFrameHist = self.plotFrameHistWidget.plot(bins[:max_bins], hist)
+        
+        '''Pixel Time Chart'''
+        # TO DO : only on 100 last values ??? - update X axis
         vals = self.widget.getGraphValues()
-        self.bins = np.linspace(0, 1024)
-        hist, bins = np.histogram(self.widget.cameraRawArray, bins=self.bins)
-        print(self.widget.cameraRawArray.shape)
-        print(type(hist))
-        self.plotSignalWidget.removeItem(self.plotHist)
-        self.plotHist = self.plotSignalWidget.plot(hist, bins)
+        self.pixelsArr = np.append(self.pixelsArr, vals)
+        
+        self.plotPixelsTimeWidget.removeItem(self.plotPixelsTime)
+        self.plotPixelsTime = self.plotPixelsTimeWidget.plot(self.pixelsArr)
+        
+        '''Pixel Histo'''
+        
                 
         en = time.time()
         print(f'Tchart = {en-st} s')
@@ -494,11 +515,25 @@ class MyWindow(QMainWindow):
         self.createChart()
 
 
+#---------------
+'''
+TO DO 
+----------
+- Adding {Start / Stop / Reset} charts
+- Time charts only on 100 last values
+- Pixels Charts/Hist : select between the center pixel and 3 more random pixels
+- Display pixels on the screen ?
+- Adding {Save Histo / Charts / Image}
+- Adding {Snap image and do analysis} -> New window ?
+
+- Create Class and File for Charts and Histo !!!
+'''
+
 #-----------------------------------------------------------------------------------------------
 
 # Launching as main for tests
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main = MyWindow()
+    main = MyWindow("MONO12")
     main.show()
     sys.exit(app.exec_())
