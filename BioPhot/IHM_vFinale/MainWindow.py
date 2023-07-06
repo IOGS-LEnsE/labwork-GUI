@@ -5,9 +5,9 @@ import glob
 from PIL import Image
 import numpy as np
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QFileDialog, QPushButton
-from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QFileDialog, QPushButton
+from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QIcon
 from CameraWidget import Camera_Widget
 from SensorSettingsWidget import Sensor_Settings_Widget
 from HardwareConnectionWidget import Hardware_Connection_Widget
