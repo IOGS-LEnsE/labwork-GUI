@@ -40,13 +40,7 @@ class MainWidget(QWidget):
         self.setStyleSheet("background: #f2f2f2;")
 
         # Choosing the optimate value for the measurement
-        self.measurementInterval = 10 # DOIT DEPENDRE DE FPS !!!
-
-        # Tested values
-        # 100  => 1.35s      |      325  => 1s
-        # 250  => 1.25s      |      400  => 1.22s
-        # 275  => 1.22s  ok  |      500  => 1.5s
-        # 300  => 0.95s      |      1000 => 2s  
+        self.measurementInterval = 10 
 
         # Create the several widgets
         self.cameraWidget = Camera_Widget(colormode = "MONO8")
