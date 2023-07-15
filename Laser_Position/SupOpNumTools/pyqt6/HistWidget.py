@@ -95,8 +95,7 @@ class HistWidget(QWidget):
         style += "font-size:10px;"
         self.info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.info_label.setStyleSheet(style)
-        
-        
+
         self.plot_chart_widget = PlotWidget()     # pyQtGraph widget
         # Create Numpy array for X and Y data
         self.plot_hist_data = np.array([])
@@ -145,9 +144,28 @@ class HistWidget(QWidget):
                                 height=self.plot_hist,
                                 width=1, brush='blue')
         self.plot_chart_widget.addItem(barGraph)
-        mean_d = round(np.mean(self.plot_hist_data), 2)
-        stdev_d = round(np.std(self.plot_hist_data), 2)
-        self.set_information(f'Mean = {mean_d} / Standard Dev = {stdev_d}')
+
+    def update_infos(self, val = True):
+        """
+        Update mean and standard deviation data and display.
+
+        Parameters
+        ----------
+        val : bool
+            True to display mean and standard deviation.
+            False to display "acquisition in progress".
+
+        Returns
+        -------
+        None
+
+        """
+        if val:
+            mean_d = round(np.mean(self.plot_hist_data), 2)
+            stdev_d = round(np.std(self.plot_hist_data), 2)
+            self.set_information(f'Mean = {mean_d} / Standard Dev = {stdev_d}')
+        else:
+            self.set_information('Data Acquisition In Progress')
         
     def set_title(self, title):
         """

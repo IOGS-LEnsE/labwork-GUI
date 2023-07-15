@@ -22,6 +22,8 @@ Use
     >>> python cameraIDSdisplay.py
 """
 # Standard Libraries
+import time
+
 import numpy as np
 import cv2
 
@@ -139,11 +141,6 @@ class CameraIDSDisplay(QWidget):
         """
         Calls to display connection panel.
 
-        Parameters
-        ----------
-        camera : camera
-            Camera IDS to use.
-
         Returns
         -------
         None.
@@ -192,18 +189,36 @@ class CameraIDSDisplay(QWidget):
         self.expo_min, self.expo_max = self.camera.get_exposure_range()
         self.exposure_time = self.expo_max/2
         self.camera.set_exposure_time(self.exposure_time)
-        self.color_mode = camIDS.get_cam_color_mode(self.user_color_mode)
-        self.camera.set_colormode(self.color_mode)
-        self.camera.set_aoi(0, 0, self.max_width, self.max_height)
-        self.camera.alloc()
-        self.camera.capture_video()
-        
+        print(self.color_mode_list())
+        self.set_color_mode(self.user_color_mode)
+        self.camera.set_aoi(0, 0, self.max_width, self.max_height)        
         self.n_bits_per_pixel = self.camera.nBitsPerPixel.value
         self.bytes_per_pixel = int(np.ceil(self.n_bits_per_pixel / 8))
         self.clear_layout()
-        self.refresh()
         self.connected_signal.emit('C')
+      
+    def start_cam(self):
+        if self.camera_connected:
+            self.camera.alloc()
+            self.camera.capture_video()
     
+    def stop_cam(self):
+        if self.camera_connected:
+            self.camera.stop_video()
+            self.camera.un_alloc()
+
+    def color_mode_list(self):
+        list = []
+        if self.camera.is_colormode(camIDS.get_cam_color_mode('RGB')):
+            list.append('RGB')
+        if self.camera.is_colormode(camIDS.get_cam_color_mode('MONO12')):
+            list.append('MONO12')
+        if self.camera.is_colormode(camIDS.get_cam_color_mode('MONO10')):
+            list.append('MONO10')
+        if self.camera.is_colormode(camIDS.get_cam_color_mode('MONO8')):
+            list.append('MONO8')
+        return list
+
     def refresh(self):
         '''
         Refresh the displaying image from camera.
@@ -239,14 +254,14 @@ class CameraIDSDisplay(QWidget):
             # Reshape of the frame to adapt it to the widget
             self.camera_disp = np.reshape(self.camera_array, 
                                          (AOIHeight, AOIWidth, -1))
-            self.camera_disp = cv2.resize(self.camera_disp, 
+            self.camera_disp2 = cv2.resize(self.camera_disp,
                                          dsize=(self.frame_width, 
                                                 self.frame_height), 
                                          interpolation=cv2.INTER_CUBIC)
             
             # Convert the frame into an image
-            image = QImage(self.camera_disp, self.camera_disp.shape[1],
-                           self.camera_disp.shape[0], self.camera_disp.shape[1], 
+            image = QImage(self.camera_disp2, self.camera_disp2.shape[1],
+                           self.camera_disp2.shape[0], self.camera_disp2.shape[1],
                            QImage.Format.Format_Indexed8)
             pmap = QPixmap(image)
 
@@ -263,7 +278,21 @@ class CameraIDSDisplay(QWidget):
         if self.camera_connected:
             self.camera.stop_camera()
             self.camera_connected = False
-            
+
+    def get_image_raw(self):
+        """
+        Return reshaped image from camera.
+
+        Returns
+        -------
+        image : numpy array
+            raw image in full size
+        """
+        return self.camera_disp
+          
+    def get_raw_data(self):
+        return self.camera_raw_frame
+
     def get_camera(self):
         return self.camera
     
@@ -322,11 +351,20 @@ class CameraIDSDisplay(QWidget):
 
     def is_camera_connected(self):
         return self.camera_connected
-        
-    def set_user_color_mode(self, color_user_mode):
-        self.cam_color_mode = camIDS.get_cam_color_mode(color_user_mode)
-        self.camera.set_colormode(self.cam_color_mode)
-        
+
+    def set_color_mode(self, color_user_mode):
+        temp_mode = camIDS.get_cam_color_mode(color_user_mode)
+        ret = self.camera.is_colormode(temp_mode)
+        if ret:
+            self.color_mode = temp_mode
+            self.camera.set_colormode(self.color_mode)
+            return True
+        else:
+            return False
+
+    def get_color_mode(self):
+        return self.color_mode
+
     def print_cam_info(self):
         if(self.camera_connected):
             print('\n\tCamera Info\n')
@@ -339,9 +377,6 @@ class CameraIDSDisplay(QWidget):
     def get_nb_bits_per_pixel(self):
         return self.n_bits_per_pixel
 
-    def get_raw_data(self):
-        return self.camera_raw_frame
-
     def set_blacklevel(self, value):
         self.camera.set_black_level(int(value))
 
@@ -351,13 +386,10 @@ class CameraIDSDisplay(QWidget):
     def get_pixel_clock(self):
         return self.camera.get_pixel_clock()
 
-    def set_aoi(self, x, y, x_size, y_size):
-        if self.is_aoi_in_range(x, y, x_size, y_size):
-            self.camera.stop_video()
-            self.camera.un_alloc()
-            self.camera.set_aoi(x, y, x_size, y_size)
-            self.camera.alloc()
-            self.camera.capture_video()
+    def set_aoi(self, x, y, width, height):
+        if self.is_aoi_in_range(x, y, width, height):
+            print('OK2')
+            self.camera.set_aoi(x, y, width, height)
         else:
             print('AOI Range Error')
 
