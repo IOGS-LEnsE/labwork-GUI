@@ -36,9 +36,9 @@ class DMD_Settings_Widget(QWidget):
         self.patternChoiceWindowWidget2 = Pattern_Choice_Window(2)
         self.patternChoiceWindowWidget3 = Pattern_Choice_Window(3)
 
-        self.patternChoiceWindowWidget1.path = r"MiresDMD\mires\mire 256\Mire256_pix_decalee_0_quarts.bmp"
-        self.patternChoiceWindowWidget2.path = r"MiresDMD\mires\mire 256\Mire256_pix_decalee_1_quarts.bmp"
-        self.patternChoiceWindowWidget3.path = r"MiresDMD\mires\mire 256\Mire256_pix_decalee_2_quarts.bmp"
+        self.patternChoiceWindowWidget1.path = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_0_quarts.bmp"
+        self.patternChoiceWindowWidget2.path = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_1_quarts.bmp"
+        self.patternChoiceWindowWidget3.path = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_2_quarts.bmp"
 
         # Creating and adding our widgets to the mainlayout
         layout = QGridLayout()

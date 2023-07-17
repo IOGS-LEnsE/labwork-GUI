@@ -4,6 +4,7 @@ import os
 import glob
 from PIL import Image
 import numpy as np
+import cv2
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QFileDialog, QPushButton
 from PyQt5.QtCore import QTimer
@@ -443,7 +444,7 @@ class Main_Widget(QWidget):
         image_filename = f"Snap_{next_image_number:02d}_{patternNumber}.tiff"
 
         # Create a PIL Image object from the array
-        image_array = self.cameraWidget.cameraFrame
+        image_array = self.cameraWidget.get_frame()
 
         # Set the endingFilename according to the path set by the directory method
         if self.path is None or self.path == '':
@@ -454,7 +455,7 @@ class Main_Widget(QWidget):
         # Save the image as a TIFF file
         cv2.imwrite(ending_filename, image_array)
 
-        print(f"Array saved as : {endingFilename}\n")
+        print(f"Array saved as : {ending_filename}\n")
 
     def printProgressBar(self, iteration, total, prefix='', suffix='', decimals=1, length=50, fill='█'):
         """
@@ -494,7 +495,7 @@ class Main_Window(QMainWindow):
         QMainWindow (class): QMainWindow can contain several widgets.
     """
 
-    def __init__(self, mode="Automatic"):
+    def __init__(self, mode="Manual"):
         """
         Initialisation of the main Window.
         """
