@@ -5,7 +5,7 @@
 # Graphical interface
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QGridLayout, QComboBox, QSlider, QLineEdit
-    )
+)
 from PyQt5.QtGui import QPixmap, QImage
 
 # Standard
@@ -20,9 +20,11 @@ from PyQt5.QtCore import QTimer, Qt
 # Camera
 from pyueye import ueye
 import cameraUeye as camera
-if camera.get_nb_of_cam() == 0 :
+
+if camera.get_nb_of_cam() == 0:
     import cameraBasler as camera
-    if camera.get_nb_of_cam() == 0 :
+
+    if camera.get_nb_of_cam() == 0:
         print("No camera detected, try to search for an answer.")
         sys.exit()
     else:
@@ -31,7 +33,8 @@ if camera.get_nb_of_cam() == 0 :
 else:
     print('Using a uEye camera.')
 
-#-----------------------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------
 
 class Camera_Widget(QWidget):
     """
@@ -40,7 +43,7 @@ class Camera_Widget(QWidget):
         QWidget (class): QWidget can be put in another widget and / or window.
     """
 
-    def __init__(self, colormode = "MONO12", type = "ueye"):
+    def __init__(self, colormode="MONO12", type="ueye"):
         """
         Initialisation of our camera widget.
         """
@@ -66,13 +69,13 @@ class Camera_Widget(QWidget):
         self.initListCamera()
 
         self.cameraDisplay = QLabel()
-        
+
         # Center the camera widget
         self.cameraDisplay.setAlignment(Qt.AlignCenter)
 
         # Create a self.layout and add widgets
         self.layout = QGridLayout()
-        self.layout.addWidget(self.cameraDisplay, 0, 0, 4, 4) # row = 0, column = 0, rowSpan = 4, columnSpan = 4
+        self.layout.addWidget(self.cameraDisplay, 0, 0, 4, 4)  # row = 0, column = 0, rowSpan = 4, columnSpan = 4
         self.setLayout(self.layout)
 
         # Other variables
@@ -87,9 +90,9 @@ class Camera_Widget(QWidget):
         fps = int(self.camera.get_frame_rate())
         if fps == 0:
             fps = 1
-        self.timerUpdate.setInterval(int(1000.0/fps))
+        self.timerUpdate.setInterval(int(1000.0 / fps))
         self.timerUpdate.timeout.connect(self.refreshGraph)
-        self.timerUpdate.start()    
+        self.timerUpdate.start()
 
     def refreshGraph(self):
         """
@@ -101,29 +104,27 @@ class Camera_Widget(QWidget):
         AOIX, AOIY, AOIWidth, AOIHeight = self.camera.get_aoi()
 
         # On teste combien d'octets par pixel
-        if(self.bytes_per_pixel >= 2):
+        if (self.bytes_per_pixel >= 2):
             # on créée une nouvelle matrice en 16 bits / C'est celle-ci qui compte pour les graphiques temporelles et les histogrammes
             self.cameraFrame = self.cameraRawArray.view(np.uint16)
             self.cameraFrame = np.reshape(self.cameraFrame, (AOIHeight, AOIWidth, -1))
-            
+
             # on génère une nouvelle matrice spécifique à l'affichage.
-            cameraFrame8b = self.cameraFrame / (2**(self.nBitsPerPixel-8))
-            self.cameraArray = cameraFrame8b.astype(np.uint8)    
+            cameraFrame8b = self.cameraFrame / (2 ** (self.nBitsPerPixel - 8))
+            self.cameraArray = cameraFrame8b.astype(np.uint8)
         else:
             self.cameraFrame = self.cameraRawArray.view(np.uint8)
             self.cameraFrame = np.reshape(self.cameraFrame, (AOIHeight, AOIWidth, -1))
             self.cameraArray = self.cameraFrame
 
-
-        # Resize the Qpixmap at the great size
-        widgetWidth, widgetHeight = self.widgetGeometry()
-        
         # On retaille si besoin à la taille de la fenètre
         self.cameraDisp = np.reshape(self.cameraArray, (AOIHeight, AOIWidth, -1))
-        self.cameraDisp = cv2.resize(self.cameraDisp, dsize=(self.frameWidth, self.frameHeight), interpolation=cv2.INTER_CUBIC)
-        
+        self.cameraDisp2 = cv2.resize(self.cameraDisp, dsize=(self.frameWidth, self.frameHeight),
+                                     interpolation=cv2.INTER_CUBIC)
+
         # Convert the frame into an image
-        image = QImage(self.cameraDisp, self.cameraDisp.shape[1], self.cameraDisp.shape[0], self.cameraDisp.shape[1], QImage.Format_Indexed8)
+        image = QImage(self.cameraDisp2, self.cameraDisp2.shape[1], self.cameraDisp2.shape[0], self.cameraDisp2.shape[1],
+                       QImage.Format_Indexed8)
         pmap = QPixmap(image)
 
         # display it in the cameraDisplay
@@ -137,9 +138,9 @@ class Camera_Widget(QWidget):
         Method used to initialize the different cameras linked to the computer.
         """
         self.nb_cam = camera.get_nb_of_cam()
-        self.cameraInfo.setText('Cam Nb = '+str(self.nb_cam))
-        if(self.nb_cam > 0):
-            self.cameraList = camera.get_cam_list() 
+        self.cameraInfo.setText('Cam Nb = ' + str(self.nb_cam))
+        if (self.nb_cam > 0):
+            self.cameraList = camera.get_cam_list()
             self.cameraListCombo.clear()
             for i in range(self.nb_cam):
                 cam = self.cameraList[i]
@@ -162,21 +163,21 @@ class Camera_Widget(QWidget):
         Method used to connect the camera.
         """
         self.selectedCamera = self.cameraListCombo.currentIndex()
-        try :
+        try:
             self.camera = camera.uEyeCamera(self.selectedCamera)
             self.type = 'ueye'
-        except :
-            try :
+        except:
+            try:
                 self.camera = camera.BaslerCamera()
                 self.type = 'basler'
-            except :
+            except:
                 print("Error : No camera detected.")
 
         self.max_width = int(self.camera.get_sensor_max_width())
         self.max_height = int(self.camera.get_sensor_max_height())
 
         self.camera.set_exposure(1000)
-        
+
         if self.type == 'ueye':
             if self.colormode == "MONO8":
                 self.m_nColorMode = ueye.IS_CM_MONO8
@@ -203,17 +204,17 @@ class Camera_Widget(QWidget):
                 self.m_nColorMode = 'Mono12'
                 self.camera.set_colormode(self.m_nColorMode)
 
-        if self.type == 'ueye' :
+        if self.type == 'ueye':
             self.nBitsPerPixel = self.camera.nBitsPerPixel
-        elif self.type == 'basler' :
+        elif self.type == 'basler':
             self.nBitsPerPixel = self.camera.nBitsPerPixel
             print(f'self.nBitsPerPixel : {self.nBitsPerPixel}')
 
         self.bytes_per_pixel = int(np.ceil(self.nBitsPerPixel / 8))
         print("nBitsPerPixel:\t", self.nBitsPerPixel)
         print("BytesPerPixel:\t", self.bytes_per_pixel)
-        
-        self.camera.set_aoi(0, 0, self.max_width-1, self.max_height-1)
+
+        self.camera.set_aoi(0, 0, self.max_width - 1, self.max_height - 1)
 
         self.camera.alloc()
         self.camera.capture_video()
@@ -232,7 +233,7 @@ class Camera_Widget(QWidget):
             list: list of points in the range of the camera's exposure.
         """
         (expositionRangeMinimum, expositionRangeMaximum) = self.camera.get_exposure_range()
-        return np.linspace(expositionRangeMinimum+0.01, expositionRangeMaximum, pointsNumber) 
+        return np.linspace(expositionRangeMinimum + 0.01, expositionRangeMaximum, pointsNumber)
 
     def getFPSRange(self):
         """
@@ -258,11 +259,11 @@ class Camera_Widget(QWidget):
         Args:
             event (_???_): ???
         """
-        if(self.camera != None):
+        if (self.camera != None):
             self.camera.stop_camera()
         QApplication.quit()
 
-    def getGraphValues(self, farness = 5):
+    def getGraphValues(self, farness=5):
         """
         Method used to return the value of 4 points near the center of the frame.
 
@@ -279,7 +280,7 @@ class Camera_Widget(QWidget):
         value4 = self.cameraFrame[width // 2][height // 2 - farness][0]
         return [value1, value2, value3, value4]
 
-    def launchAOI(self, AOIX, AOIY, AOIWidth, AOIHeight, type = None):
+    def launchAOI(self, AOIX, AOIY, AOIWidth, AOIHeight, type=None):
         """
         Method used to launch the AOI.
         I know it is not optimised, but that avoid a bug where the image is in black when students are changing the setting
@@ -306,24 +307,24 @@ class Camera_Widget(QWidget):
 
                 # Setting the AOI
                 self.camera.set_aoi(AOIX, AOIY, AOIWidth, AOIHeight)
-                self.aoiTrueFalse = True 
-                print("--- AOI Active ---") 
+                self.aoiTrueFalse = True
+                print("--- AOI Active ---")
 
             elif self.aoiTrueFalse and type == None:
 
                 # Stop AOI
                 self.camera.set_aoi(0, 0, self.max_width, self.max_height)
-                self.aoiTrueFalse = False 
+                self.aoiTrueFalse = False
                 print("--- Whole Camera ---")
-                
+
             # Re-alloc memory and re-run video
             self.camera.alloc()
             self.camera.capture_video()
 
             # Restart the refresh
             print(f'NewFPS={self.camera.get_frame_rate()} Hz')
-            print(f'NewTimer={int(1000.0/self.camera.get_frame_rate())} ms')
-            self.timerUpdate.setInterval(int(1000.0/self.camera.get_frame_rate()))
+            print(f'NewTimer={int(1000.0 / self.camera.get_frame_rate())} ms')
+            self.timerUpdate.setInterval(int(1000.0 / self.camera.get_frame_rate()))
             self.timerUpdate.start()
 
     def setColor(self, color):
@@ -335,14 +336,18 @@ class Camera_Widget(QWidget):
         """
         if color == "blue":
             self.setStyleSheet("background-color: #4472c4; border-radius: 10px;"
-                           "border-color: black; border-width: 2px; font: bold 12px; padding: 20px;"
-                           "border-style: solid;")
+                               "border-color: black; border-width: 2px; font: bold 12px; padding: 20px;"
+                               "border-style: solid;")
         elif color == "orange":
             self.setStyleSheet("background-color: #c55a11; border-radius: 10px;"
-                           "border-color: black; border-width: 2px; font: bold 12px; padding: 20px;"
-                           "border-style: solid;")
+                               "border-color: black; border-width: 2px; font: bold 12px; padding: 20px;"
+                               "border-style: solid;")
 
-#-----------------------------------------------------------------------------------------------
+    def get_frame(self):
+        return self.cameraDisp
+
+
+# -----------------------------------------------------------------------------------------------
 
 class Setting_Widget_Float(QWidget):
     """
@@ -351,6 +356,7 @@ class Setting_Widget_Float(QWidget):
     Args:
         QWidget (class): QWidget can be put in another widget and / or window.
     """
+
     def __init__(self, selectionLabel, floatListToSelect):
         """
         Initialiszation of the widget.
@@ -377,25 +383,26 @@ class Setting_Widget_Float(QWidget):
 
         # Create a line widget and place it into the grid layout
         self.line = QLineEdit(self)
-        line_label_layout.addWidget(self.line, 0, 0, 1, 1) # row = 0, column = 0, rowSpan = 1, columnSpan = 1
+        line_label_layout.addWidget(self.line, 0, 0, 1, 1)  # row = 0, column = 0, rowSpan = 1, columnSpan = 1
         self.line.textChanged.connect(self.linetextValueChanged)
 
         # Create a label widget and place it into the grid layout
         self.labelValue = QLabel()
-        line_label_layout.addWidget(self.labelValue, 0, 1, 1, 1) # row = 0, column = 1, rowSpan = 1, columnSpan = 1
+        line_label_layout.addWidget(self.labelValue, 0, 1, 1, 1)  # row = 0, column = 1, rowSpan = 1, columnSpan = 1
 
         # Create a slider widget and place it into the grid layout
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setRange(0, len(self.floatListToSelect) - 1)
         self.slider.valueChanged.connect(self.sliderValueChanged)
 
-        layout.addWidget(self.slider, 0, 0, 1, 4) # row = 0, column = 0, rowSpan = 1, columnSpan = 4
-        layout.addLayout(line_label_layout, 1, 0, 1, 4) # row = 1, column = 0, rowSpan = 1, columnSpan = 4
+        layout.addWidget(self.slider, 0, 0, 1, 4)  # row = 0, column = 0, rowSpan = 1, columnSpan = 4
+        layout.addLayout(line_label_layout, 1, 0, 1, 4)  # row = 1, column = 0, rowSpan = 1, columnSpan = 4
 
         group_box.setLayout(layout)
 
         main_layout = QGridLayout()
-        main_layout.addWidget(group_box, 0, 0, 1, 1) # row = 0, column = 0, rowSpan = 1, columnSpan = 0 <=> QHBoxLayout or V
+        main_layout.addWidget(group_box, 0, 0, 1,
+                              1)  # row = 0, column = 0, rowSpan = 1, columnSpan = 0 <=> QHBoxLayout or V
         self.setLayout(main_layout)
 
     def sliderValueChanged(self, value):
@@ -406,7 +413,7 @@ class Setting_Widget_Float(QWidget):
             value (float): useful value of the slider.
         """
         self.value = self.floatListToSelect[value]
-        self.labelValue.setText(self.selectionLabel + "= "+ str(math.floor(self.value * 100) / 100))
+        self.labelValue.setText(self.selectionLabel + "= " + str(math.floor(self.value * 100) / 100))
 
     def linetextValueChanged(self, text):
         """
@@ -418,7 +425,7 @@ class Setting_Widget_Float(QWidget):
         self.value = float(text)
         self.labelValue.setText(self.selectionLabel + str(math.floor(float(text) * 100) / 100))
         self.setValue(float(text))
-    
+
     def setValue(self, value):
         """
         Method used to set the value of the slider without using a long line each time.
@@ -429,7 +436,8 @@ class Setting_Widget_Float(QWidget):
         """
         self.slider.setValue(np.argmin(np.abs(self.floatListToSelect - value)))
 
-#-----------------------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------
 
 class MyWindow(QMainWindow):
     def __init__(self):
@@ -438,13 +446,14 @@ class MyWindow(QMainWindow):
         self.setWindowTitle("Camera Window")
         self.setGeometry(100, 100, 400, 300)
 
-        widget = Camera_Widget(colormode = "MONO12")
+        widget = Camera_Widget(colormode="MONO12")
         widget.connectCamera()
         widget.launchVideo()
 
         self.setCentralWidget(widget)
 
-#-----------------------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------
 
 # Launching as main for tests
 if __name__ == '__main__':

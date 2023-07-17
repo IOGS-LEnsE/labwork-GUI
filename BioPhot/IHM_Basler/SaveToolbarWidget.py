@@ -52,12 +52,12 @@ class Save_Widget(QWidget):
         """
         # Set the beginningFilename according to the path set by the directory method
         if self.path is None or self.path == '':
-            beginningFilename = 'Snap_*.tiff'
+            beginning_filename = 'Snap_*.tiff'
         else:
-            beginningFilename = self.path + '/Snap_*.tiff'
+            beginning_filename = self.path + '/Snap_*.tiff'
 
         # Get the number of existing image files in the folder
-        image_files = glob.glob(beginningFilename)
+        image_files = glob.glob(beginning_filename)
         num_images = len(image_files)
 
         # Increment the image number by 1 relative to the total number of existing images
@@ -65,9 +65,6 @@ class Save_Widget(QWidget):
 
         # Format the image file name
         image_filename = f"Snap_{next_image_number:02d}.tiff"
-
-        # Create a PIL Image object from the array
-        print(array.shape)
 
         # Set the endingFilename according to the path set by the directory method
         if self.path is None or self.path == '':
@@ -79,7 +76,7 @@ class Save_Widget(QWidget):
         cv2.imwrite(ending_filename, array)
 
         print(f"Array saved as {ending_filename}\n")
-        
+
     def setMode(self, mode):
         """
         Method used to set the color mode of utilisation.

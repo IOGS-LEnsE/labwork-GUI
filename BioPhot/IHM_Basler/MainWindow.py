@@ -69,7 +69,7 @@ class Main_Widget(QWidget):
         # Setting the save function and directory between the saveButton and the cameraWidget
         self.saveWidget.directoryPushButton.clicked.connect(lambda: self.directory())
         self.saveWidget.savePushButton.clicked.connect(
-            lambda: self.saveWidget.saveImage(self.cameraWidget.cameraFrame))
+            lambda: self.saveWidget.saveImage(self.cameraWidget.get_frame()))
 
         # Setting the save function and the folder function between the saveButton and the parameters window
         self.automaticModeWidget.parametersAutoModeWindow.directoryPushButton.clicked.connect(
@@ -430,10 +430,10 @@ class Main_Widget(QWidget):
             patternNumber (int): Pattern number for the image.
         """
         # Set the beginningFilename according to the path set by the directory method
-        beginningFilename = self.scanFolderPath + '\Snap_*_*.tiff'
+        beginning_filename = self.scanFolderPath + '\Snap_*_*.tiff'
 
         # Get the number of existing image files in the folder
-        image_files = glob.glob(os.path.join(self.scanFolderPath, beginningFilename))
+        image_files = glob.glob(os.path.join(self.scanFolderPath, beginning_filename))
         num_images = len(image_files)
 
         # Increment the image number by 1 relative to the total number of existing images
@@ -443,16 +443,16 @@ class Main_Widget(QWidget):
         image_filename = f"Snap_{next_image_number:02d}_{patternNumber}.tiff"
 
         # Create a PIL Image object from the array
-        image = Image.fromarray(np.uint16(self.cameraWidget.cameraFrame))
+        image_array = self.cameraWidget.cameraFrame
 
         # Set the endingFilename according to the path set by the directory method
         if self.path is None or self.path == '':
-            endingFilename = image_filename
+            ending_filename = image_filename
         else:
-            endingFilename = os.path.join(self.scanFolderPath, image_filename)
+            ending_filename = os.path.join(self.scanFolderPath, image_filename)
 
         # Save the image as a TIFF file
-        image.save(endingFilename)
+        cv2.imwrite(ending_filename, image_array)
 
         print(f"Array saved as : {endingFilename}\n")
 
