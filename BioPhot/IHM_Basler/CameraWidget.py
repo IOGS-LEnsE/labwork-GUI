@@ -27,6 +27,7 @@ if camera.get_nb_of_cam() == 0 :
         sys.exit()
     else:
         print("Using a Basler camera.")
+        print(camera.get_cam_list())
 else:
     print('Using a uEye camera.')
 
@@ -94,6 +95,7 @@ class Camera_Widget(QWidget):
         """
         Method used to refresh the graph for the image display.
         """
+        print('OK')
         self.cameraRawArray = self.camera.get_image()
 
         AOIX, AOIY, AOIWidth, AOIHeight = self.camera.get_aoi()
@@ -172,6 +174,7 @@ class Camera_Widget(QWidget):
 
         self.max_width = int(self.camera.get_sensor_max_width())
         self.max_height = int(self.camera.get_sensor_max_height())
+
         self.camera.set_exposure(1000)
         
         if self.type == 'ueye':
