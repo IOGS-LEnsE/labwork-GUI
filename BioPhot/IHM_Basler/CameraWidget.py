@@ -40,7 +40,7 @@ class Camera_Widget(QWidget):
         QWidget (class): QWidget can be put in another widget and / or window.
     """
 
-    def __init__(self, colormode = "MONO12", type = "basler"):
+    def __init__(self, colormode = "MONO12", type = "ueye"):
         """
         Initialisation of our camera widget.
         """
@@ -57,6 +57,8 @@ class Camera_Widget(QWidget):
         self.aoiTrueFalse = False
         self.camera = None
         self.type = type
+        self.nBitsPerPixel = 0
+        self.bytes_per_pixel = 0
 
         # Graphical interface
         self.cameraInfo = QLabel("Camera Info")
@@ -70,24 +72,22 @@ class Camera_Widget(QWidget):
 
         # Create a self.layout and add widgets
         self.layout = QGridLayout()
-
         self.layout.addWidget(self.cameraDisplay, 0, 0, 4, 4) # row = 0, column = 0, rowSpan = 4, columnSpan = 4
-        
         self.setLayout(self.layout)
 
         # Other variables
         self.timerUpdate = QTimer()
         self.frameWidth = self.cameraDisplay.width()
         self.frameHeight = self.cameraDisplay.height()
-        print(f'Width : {self.frameWidth} - Height : {self.frameHeight}')
 
     def launchVideo(self):
         """
         Method used to launch the video.
         """
-        print(f'IsOpen = {self.camera.h_cam.IsOpen()}')
-        self.timerUpdate.setInterval(int(1000.0/self.camera.get_frame_rate()))
-        print(f'FPS = {int(self.camera.get_frame_rate())}')
+        fps = int(self.camera.get_frame_rate())
+        if fps == 0:
+            fps = 1
+        self.timerUpdate.setInterval(int(1000.0/fps))
         self.timerUpdate.timeout.connect(self.refreshGraph)
         self.timerUpdate.start()    
 
@@ -190,34 +190,9 @@ class Camera_Widget(QWidget):
                 self.m_nColorMode = ueye.IS_CM_MONO12
                 self.camera.set_colormode(self.m_nColorMode)
 
-            else:
-                try : 
-                    self.m_nColorMode = ueye.IS_CM_MONO12
-                    self.camera.set_colormode(self.m_nColorMode)
-
-                except :
-                    print("MONO 12 unavailable.")
-
-                    try : 
-                        self.m_nColorMode = ueye.IS_CM_MONO10
-                        self.camera.set_colormode(self.m_nColorMode)
-
-                    except : 
-                        print("MONO 10 unavailable.")
-                        self.camera.set_colormode(self.m_nColorMode)
-
-                        try : 
-                            self.m_nColorMode = ueye.IS_CM_MONO8
-                            self.camera.set_colormode(self.m_nColorMode)
-
-                        except : 
-                            print("MONO 8 unavailable.")
-                            print("Camera unavailable.")
-
-        elif self.type == 'basler' :
+        elif self.type == 'basler':
             if self.colormode == "MONO8":
                 self.m_nColorMode = 'Mono8'
-                print(f'self.m_nColorMode : {self.m_nColorMode}')
                 self.camera.set_colormode(self.m_nColorMode)
 
             elif self.colormode == "MONO10":
@@ -227,30 +202,6 @@ class Camera_Widget(QWidget):
             elif self.colormode == "MONO12":
                 self.m_nColorMode = 'Mono12'
                 self.camera.set_colormode(self.m_nColorMode)
-
-            else:
-                try : 
-                    self.m_nColorMode = 'Mono12'
-                    self.camera.set_colormode(self.m_nColorMode)
-
-                except :
-                    print("MONO 12 unavailable.")
-
-                    try : 
-                        self.m_nColorMode = 'Mono10'
-                        self.camera.set_colormode(self.m_nColorMode)
-
-                    except : 
-                        print("MONO 10 unavailable.")
-                        self.camera.set_colormode(self.m_nColorMode)
-
-                        try : 
-                            self.m_nColorMode = 'Mono8'
-                            self.camera.set_colormode(self.m_nColorMode)
-
-                        except : 
-                            print("MONO 8 unavailable.")
-                            print("Camera unavailable.")  
 
         if self.type == 'ueye' :
             self.nBitsPerPixel = self.camera.nBitsPerPixel
@@ -266,9 +217,6 @@ class Camera_Widget(QWidget):
 
         self.camera.alloc()
         self.camera.capture_video()
-
-        # There is a way to set the initial minimumValue of the exposure as near as possible from the original minimumValue of the
-        # camera, for any camera
 
         self.setLayout(self.layout)
         self.refreshGraph()

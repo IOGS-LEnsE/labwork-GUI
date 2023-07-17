@@ -2,8 +2,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QGridLayout, QWidget, QPushButton, QLabel, QPushButton
 import glob
-from PIL import Image
-import numpy as np
+import cv2
 
 #-------------------------------------------------------------------------------------------------------
 
@@ -68,19 +67,19 @@ class Save_Widget(QWidget):
         image_filename = f"Snap_{next_image_number:02d}.tiff"
 
         # Create a PIL Image object from the array
-        image = Image.fromarray(np.uint16(array))
+        print(array.shape)
 
         # Set the endingFilename according to the path set by the directory method
         if self.path is None or self.path == '':
-            endingFilename = image_filename
+            ending_filename = image_filename
         else:
-            endingFilename = self.path + '/' + image_filename
+            ending_filename = self.path + '/' + image_filename
 
         # Save the image as a TIFF file
-        image.save(endingFilename)
+        cv2.imwrite(ending_filename, array)
 
-        print(f"Array saved as {endingFilename}\n")
-
+        print(f"Array saved as {ending_filename}\n")
+        
     def setMode(self, mode):
         """
         Method used to set the color mode of utilisation.

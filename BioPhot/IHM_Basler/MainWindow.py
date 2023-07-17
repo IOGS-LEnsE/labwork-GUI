@@ -17,7 +17,7 @@ from PiezoControlWidget import Piezo_Control_Widget
 from ModeWidget import Mode_Widget
 from SaveToolbarWidget import Save_Widget
 
-#-------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------
 
 # Colors
 """
@@ -31,7 +31,8 @@ Colors :    Green  : #c5e0b4
             Grey2  : #bfbfbf
 """
 
-#-------------------------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------------------------
 
 class Main_Widget(QWidget):
     """
@@ -40,7 +41,8 @@ class Main_Widget(QWidget):
     Args:
         QWidget (class): QWidget can be put in another widget and / or window.
     """
-    def __init__(self, mode = "Automatic"):
+
+    def __init__(self, mode="Automatic"):
         """
         Initialisation of the main Widget.
         """
@@ -61,91 +63,90 @@ class Main_Widget(QWidget):
         self.piezoControlWidget = Piezo_Control_Widget()
 
         # Create the several widgets for the Toolbar
-        self.modeWidget = Mode_Widget(mode = self.mode)
+        self.modeWidget = Mode_Widget(mode=self.mode)
         self.saveWidget = Save_Widget()
 
         # Setting the save function and directory between the saveButton and the cameraWidget
-        self.saveWidget.directoryPushButton.clicked.connect(lambda : self.directory())
+        self.saveWidget.directoryPushButton.clicked.connect(lambda: self.directory())
         self.saveWidget.savePushButton.clicked.connect(
-            lambda : self.saveWidget.saveImage(self.cameraWidget.cameraFrame))
-    
+            lambda: self.saveWidget.saveImage(self.cameraWidget.cameraFrame))
+
         # Setting the save function and the folder function between the saveButton and the parameters window
         self.automaticModeWidget.parametersAutoModeWindow.directoryPushButton.clicked.connect(
-            lambda : self.directory())
+            lambda: self.directory())
         self.automaticModeWidget.parametersAutoModeWindow.saveParametersPushButton.clicked.connect(
-            lambda : self.saveParameters())
+            lambda: self.saveParameters())
 
         # Setting the move function in manual mode
-        self.piezoControlWidget.ZAxis.slider.valueChanged.connect(lambda : self.movePiezo())
-        self.piezoControlWidget.FineZ.slider.valueChanged.connect(lambda : self.movePiezo())
+        self.piezoControlWidget.ZAxis.slider.valueChanged.connect(lambda: self.movePiezo())
+        self.piezoControlWidget.FineZ.slider.valueChanged.connect(lambda: self.movePiezo())
 
         # Setting the automatic start button 
         self.automaticModeWidget.startButton.clicked.connect(
-            lambda : self.launchScan())
+            lambda: self.launchScan())
 
         # Setting a reset DMD button
         self.resetDMDPushButton = QPushButton("Reset DMD")
-        self.resetDMDPushButton.clicked.connect(lambda : self.DMDSettingsWidget.resetDMD())
+        self.resetDMDPushButton.clicked.connect(lambda: self.DMDSettingsWidget.resetDMD())
 
         # Setting the utilisation mode of the application and launching the next updates
         self.setMode()
-        self.modeWidget.toggle.stateChanged.connect(lambda : self.changeMode())
+        self.modeWidget.toggle.stateChanged.connect(lambda: self.changeMode())
 
         # Create and add the widgets into the layout
         layoutMain = QGridLayout()
         self.setLayout(layoutMain)
 
-        layoutMain.addWidget(self.cameraWidget, 0, 0, 4, 4) # row = 0, column = 0, rowSpan = 4, columnSpan = 4
-        layoutMain.addWidget(self.sensorSettingsWidget, 4, 0, 3, 4) # row = 4, column = 0, rowSpan = 3, columnSpan = 4
-        layoutMain.addWidget(self.hardwareConnectionWidget, 0, 5, 1, 4) # row = 0, column = 5, rowSpan = 1, columnSpan = 4
-        layoutMain.addWidget(self.DMDSettingsWidget, 1, 5, 2, 4) # row = 1, column = 5, rowSpan = 2, columnSpan = 4
-        layoutMain.addWidget(self.automaticModeWidget, 3, 5, 1, 4) # row = 3, column = 5, rowSpan = 1, columnSpan = 4
-        layoutMain.addWidget(self.piezoControlWidget, 4, 5, 3, 4) # row = 4, column = 5, rowSpan = 3, columnSpan = 4
+        layoutMain.addWidget(self.cameraWidget, 0, 0, 4, 4)  # row = 0, column = 0, rowSpan = 4, columnSpan = 4
+        layoutMain.addWidget(self.sensorSettingsWidget, 4, 0, 3, 4)  # row = 4, column = 0, rowSpan = 3, columnSpan = 4
+        layoutMain.addWidget(self.hardwareConnectionWidget, 0, 5, 1,
+                             4)  # row = 0, column = 5, rowSpan = 1, columnSpan = 4
+        layoutMain.addWidget(self.DMDSettingsWidget, 1, 5, 2, 4)  # row = 1, column = 5, rowSpan = 2, columnSpan = 4
+        layoutMain.addWidget(self.automaticModeWidget, 3, 5, 1, 4)  # row = 3, column = 5, rowSpan = 1, columnSpan = 4
+        layoutMain.addWidget(self.piezoControlWidget, 4, 5, 3, 4)  # row = 4, column = 5, rowSpan = 3, columnSpan = 4
 
         self.cameraWidget.connectCamera()
         self.initSettings()
         self.cameraWidget.launchVideo()
-
 
     # General methods used by the interface
     def initSettings(self):
         """
         Method used to setup the settings.
         """
+        # Initialisation of the FPS setting
+        minFPS, maxFPS = self.cameraWidget.getFPSRange()
+        self.sensorSettingsWidget.FPS.slider.setMinimum(minFPS)
+        self.sensorSettingsWidget.FPS.slider.setMaximum(maxFPS)
+        self.sensorSettingsWidget.FPS.slider.setValue(maxFPS)
+        print(f'FPS = {self.sensorSettingsWidget.FPS.getValue()}')
+        self.cameraWidget.camera.set_frame_rate(self.sensorSettingsWidget.FPS.getValue())
+        print(f'FPS2 = {self.cameraWidget.camera.get_frame_rate()}')
+
+        self.sensorSettingsWidget.FPS.slider.valueChanged.connect(
+            lambda: self.cameraWidget.camera.set_frame_rate(self.sensorSettingsWidget.FPS.getValue()))
+        self.sensorSettingsWidget.FPS.setValue(self.sensorSettingsWidget.FPS.getValue())
+
         # Initialisation of the exposure setting
         ## REVOIR RANGE !! EXPOSURE TIME
         self.sensorSettingsWidget.exposureTime.floatListToSelect = self.cameraWidget.generateExpositionRangeList(1000)
-        self.sensorSettingsWidget.exposureTime.slider.setRange(0, len(self.sensorSettingsWidget.exposureTime.floatListToSelect) - 1)
+        self.sensorSettingsWidget.exposureTime.slider.setRange(0,
+                                                               len(self.sensorSettingsWidget.exposureTime.floatListToSelect) - 1)
 
         self.sensorSettingsWidget.exposureTime.slider.valueChanged.connect(
-            lambda : self.cameraWidget.camera.set_exposure(self.sensorSettingsWidget.exposureTime.value))
+            lambda: self.cameraWidget.camera.set_exposure(self.sensorSettingsWidget.exposureTime.value))
 
         self.sensorSettingsWidget.exposureTime.setValue(self.sensorSettingsWidget.exposureTime.floatListToSelect[-1])
         self.cameraWidget.camera.set_exposure(1000)
 
-        # Initialisation of the FPS setting
-        minFPS, maxFPS = self.cameraWidget.getFPSRange()
-        print(f'MFPS {maxFPS}')
-        self.sensorSettingsWidget.FPS.slider.setMinimum(minFPS)
-        self.sensorSettingsWidget.FPS.slider.setMaximum(maxFPS)
-        self.sensorSettingsWidget.FPS.slider.setValue(maxFPS)
-        print(self.sensorSettingsWidget.FPS.getValue())
-        self.cameraWidget.camera.set_frame_rate(self.sensorSettingsWidget.FPS.getValue())
-
-        self.sensorSettingsWidget.FPS.slider.valueChanged.connect(
-            lambda : self.cameraWidget.camera.set_frame_rate(self.sensorSettingsWidget.FPS.getValue()))
-        self.sensorSettingsWidget.FPS.slider.valueChanged.connect(
-            lambda : print(f"FPS : {self.cameraWidget.camera.get_frame_rate()}"))
-        
-        self.sensorSettingsWidget.FPS.setValue(self.sensorSettingsWidget.FPS.getValue())
-
         # Initialisation of the BlackLevel setting
         self.sensorSettingsWidget.blackLevel.slider.setMinimum(0)
         self.sensorSettingsWidget.blackLevel.slider.setMaximum(4095)
-        self.sensorSettingsWidget.blackLevel.setValue(int(self.cameraWidget.camera.get_black_level())) # camera's blacklevel
+        self.sensorSettingsWidget.blackLevel.setValue(
+            int(self.cameraWidget.camera.get_black_level()))  # camera's blacklevel
 
         self.sensorSettingsWidget.blackLevel.slider.valueChanged.connect(
-            lambda : self.cameraWidget.camera.set_black_level(self.sensorSettingsWidget.blackLevel.getValue()))
+            lambda: self.cameraWidget.camera.set_black_level(self.sensorSettingsWidget.blackLevel.getValue()))
 
     def setMode(self):
         """
@@ -196,12 +197,12 @@ class Main_Widget(QWidget):
         """
         Method used to move the piezo in manual mode.
         """
-        if self.hardwareConnectionWidget.piezoConnected : 
+        if self.hardwareConnectionWidget.piezoConnected:
             self.hardwareConnectionWidget.piezo.movePosition(
                 self.piezoControlWidget.ZAxis.getValue(),
                 self.piezoControlWidget.FineZ.getValue()
             )
-            
+
             ZAxis, FineZ = self.hardwareConnectionWidget.piezo.getPosition()
             print(f"Piezo at : {ZAxis} um, {FineZ} nm")
 
@@ -214,7 +215,8 @@ class Main_Widget(QWidget):
         self.saveWidget.path = self.path
         self.automaticModeWidget.parametersAutoModeWindow.path = self.path
         self.saveWidget.directoryPushButton.setText('Directory : ' + self.getSmallText())
-        self.automaticModeWidget.parametersAutoModeWindow.directoryPushButton.setText('Directory : ' + self.getSmallText())
+        self.automaticModeWidget.parametersAutoModeWindow.directoryPushButton.setText(
+            'Directory : ' + self.getSmallText())
 
     def getSmallText(self):
         """
@@ -223,10 +225,10 @@ class Main_Widget(QWidget):
         Returns:
             str: the string that must be on the directory push button.
         """
-        if self.path == None or self.path == '': 
-            return 'Here' 
-        
-        # Split the string by '/'
+        if self.path == None or self.path == '':
+            return 'Here'
+
+            # Split the string by '/'
         end = self.path.split('/')
         # Return the last part of the split
         return end[-1]
@@ -237,20 +239,20 @@ class Main_Widget(QWidget):
         Method used to scan in automatic mode.
         """
         # Read the parameters and get the Z Displacement and the Z Step
-        try :
+        try:
             parameters = self.readParameters()
-        except FileNotFoundError :
+        except FileNotFoundError:
             return print("'parameters.txt' required : use 'Parameters' button in 'Automatic Mode'")
-        except ValueError :
+        except ValueError:
             return print("Some values in 'parameters.txt' are not correct.\nAcquisition impossible.")
-            
+
         if not self.hardwareConnectionWidget.piezo.isConnected():
             self.hardwareConnectionWidget.connection()
             if not self.hardwareConnectionWidget.piezo.isConnected():
-                return print("The Hardwara for the Piezo is not connected : you must connect it first.")
+                return print("The Hardward for the Piezo is not connected : you must connect it first.")
 
         z_displacement, z_step = parameters['Z Displacement'], parameters['Z Step']
-        
+
         # Set the camera with the values of the parameter file
         Exposure, FPS, BlackLevel = parameters['Exposure time'], parameters['FPS'], parameters['BlackLevel']
         self.sensorSettingsWidget.exposureTime.setValue(Exposure)
@@ -281,12 +283,12 @@ class Main_Widget(QWidget):
                 self.saveImage(pattern_number)
 
             # Set up the prograssion bar
-            progression = 100 * (index+1) // len(zs_list)
+            progression = 100 * (index + 1) // len(zs_list)
             self.automaticModeWidget.progressionBar.setValue(progression)
-            self.printProgressBar(progression, 100, suffix = "\n\n")
+            self.printProgressBar(progression, 100, suffix="\n\n")
         self.timer = QTimer(self)
         self.timer.setInterval(5000)
-        self.timer.timeout.connect(lambda : self.setProgressBarTo0())
+        self.timer.timeout.connect(lambda: self.setProgressBarTo0())
         self.timer.start()
 
     def saveParameters(self):
@@ -299,14 +301,17 @@ class Main_Widget(QWidget):
             filename = self.path + "/parameters.txt"
 
         # Securities 
-        if ( self.automaticModeWidget.parametersAutoModeWindow.zDisplacementLine.text() ) == "" or ( not self.automaticModeWidget.parametersAutoModeWindow.zDisplacementLine.text().isdigit() ):
+        if (self.automaticModeWidget.parametersAutoModeWindow.zDisplacementLine.text()) == "" or (
+        not self.automaticModeWidget.parametersAutoModeWindow.zDisplacementLine.text().isdigit()):
             return print("You must enter a correct value as Z Displacement : an integer.")
-        
-        if ( self.automaticModeWidget.parametersAutoModeWindow.zStepLine.text() ) == "" or ( not self.automaticModeWidget.parametersAutoModeWindow.zStepLine.text().isdigit() ):
+
+        if (self.automaticModeWidget.parametersAutoModeWindow.zStepLine.text()) == "" or (
+        not self.automaticModeWidget.parametersAutoModeWindow.zStepLine.text().isdigit()):
             return print("You must enter a correct value as Z Step Line : an integer.")
 
         with open(filename, "w") as file:
-            file.write(f"Z Displacement = {self.automaticModeWidget.parametersAutoModeWindow.zDisplacementLine.text()}\n")
+            file.write(
+                f"Z Displacement = {self.automaticModeWidget.parametersAutoModeWindow.zDisplacementLine.text()}\n")
             file.write(f"Z Step = {self.automaticModeWidget.parametersAutoModeWindow.zStepLine.text()}\n")
             file.write("\n")
             file.write("Camera settings :\n")
@@ -362,7 +367,7 @@ class Main_Widget(QWidget):
                     parameters['Patterns'].append({'Pattern Number': pattern_number, 'Pattern Path': pattern_path})
 
         return parameters
-       
+
     def calculateZs(self, z_displacement, z_step):
         """
         A method used to set up the different values that will set the piezo.
@@ -384,7 +389,7 @@ class Main_Widget(QWidget):
             zs_axis.append(z_axis)
             fine_zs.append(fine_z)
 
-            current_z += z_step*10**-3
+            current_z += z_step * 10 ** -3
 
             if current_z > z_displacement:
                 z_axis = int(z_displacement)
@@ -400,12 +405,12 @@ class Main_Widget(QWidget):
         """
         Method used to create a new folder to save our scans.
         """
-        if self.path == None or self.path == "":
+        if self.path is None or self.path == "":
             self.path = os.getcwd()
             self.saveWidget.directoryPushButton.setText('Directory : ' + self.getSmallText())
-            self.automaticModeWidget.parametersAutoModeWindow.directoryPushButton.setText('Directory : ' + self.getSmallText())
+            self.automaticModeWidget.parametersAutoModeWindow.directoryPushButton.setText(
+                'Directory : ' + self.getSmallText())
 
- 
         base_foldername = self.path + "/Scan_"
         print(base_foldername)
 
@@ -470,7 +475,7 @@ class Main_Widget(QWidget):
         print(f'\r{prefix} |{bar}| {percent}% {suffix}', end='')
         if iteration == total:
             print("\n\n-------------------- Scan done. --------------------\n\n\n")
-    
+
     def setProgressBarTo0(self):
         """
         Method used to set the progress bar to 0.
@@ -478,7 +483,8 @@ class Main_Widget(QWidget):
         self.automaticModeWidget.progressionBar.setValue(0)
         self.timer.stop
 
-#-------------------------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------------------------
 
 class Main_Window(QMainWindow):
     """
@@ -487,7 +493,8 @@ class Main_Window(QMainWindow):
     Args:
         QMainWindow (class): QMainWindow can contain several widgets.
     """
-    def __init__(self, mode = "Automatic"):
+
+    def __init__(self, mode="Automatic"):
         """
         Initialisation of the main Window.
         """
@@ -499,7 +506,7 @@ class Main_Window(QMainWindow):
         # Define Window title and logo
         self.setWindowTitle("TP : Microscope à illumination structurée")
         self.setWindowIcon(QIcon("IOGSLogo.jpg"))
-        
+
         # Get the relative values of the screen to set up the whole thing
         desktop = QApplication.desktop()
         screen_rect = desktop.screenGeometry()
@@ -508,53 +515,56 @@ class Main_Window(QMainWindow):
         relative_x_window = screen_rect.width() * 0.0025  # Relative X-coordinate
         relative_y_window = screen_rect.height() * 0.05  # Relative Y-coordinate
         relative_width_window = screen_rect.width() * 0.650  # Relative width
-        relative_height_window = screen_rect.height() * (0.9) # Relative height
+        relative_height_window = screen_rect.height() * (0.9)  # Relative height
 
-        self.setGeometry(int(relative_x_window), int(relative_y_window), int(relative_width_window), int(relative_height_window))
+        self.setGeometry(int(relative_x_window), int(relative_y_window), int(relative_width_window),
+                         int(relative_height_window))
 
         # Set the widget as the central widget of the window
-        self.mainWidget = Main_Widget(mode = self.mode)
+        self.mainWidget = Main_Widget(mode=self.mode)
         self.setCentralWidget(self.mainWidget)
 
         # Same thing for the windows
         relative_x_pattern_window = screen_rect.width() * 0.6575  # Relative X-coordinate
         relative_y_pattern_window = screen_rect.height() * 0.05  # Relative Y-coordinate
-        relative_width_pattern_window = screen_rect.width() * (1-0.650-0.0025*3)  # Relative width
-        relative_height_pattern_window = screen_rect.height() * (0.625) # Relative height
+        relative_width_pattern_window = screen_rect.width() * (1 - 0.650 - 0.0025 * 3)  # Relative width
+        relative_height_pattern_window = screen_rect.height() * (0.625)  # Relative height
 
         self.mainWidget.DMDSettingsWidget.patternChoiceWindowWidget1.setGeometry(
             int(relative_x_pattern_window),
-            int(relative_y_pattern_window), 
-            int(relative_width_pattern_window), 
-            int(relative_height_pattern_window))
-        
-        self.mainWidget.DMDSettingsWidget.patternChoiceWindowWidget2.setGeometry(
-            int(relative_x_pattern_window), 
-            int(relative_y_pattern_window + screen_rect.height() * (0.025)), 
+            int(relative_y_pattern_window),
             int(relative_width_pattern_window),
-              int(relative_height_pattern_window))
-        
+            int(relative_height_pattern_window))
+
+        self.mainWidget.DMDSettingsWidget.patternChoiceWindowWidget2.setGeometry(
+            int(relative_x_pattern_window),
+            int(relative_y_pattern_window + screen_rect.height() * (0.025)),
+            int(relative_width_pattern_window),
+            int(relative_height_pattern_window))
+
         self.mainWidget.DMDSettingsWidget.patternChoiceWindowWidget3.setGeometry(
-            int(relative_x_pattern_window), 
-            int(relative_y_pattern_window + screen_rect.height() * (0.05)), 
-            int(relative_width_pattern_window), 
+            int(relative_x_pattern_window),
+            int(relative_y_pattern_window + screen_rect.height() * (0.05)),
+            int(relative_width_pattern_window),
             int(relative_height_pattern_window))
 
         self.mainWidget.automaticModeWidget.parametersAutoModeWindow.setGeometry(
-            int(relative_x_pattern_window), 
-            int(relative_y_pattern_window + screen_rect.height() * (0.05) + relative_height_pattern_window + screen_rect.height() * (0.025) * 2),
-            int(relative_width_pattern_window), 
-            int(0.9-(relative_y_pattern_window + screen_rect.height() * (0.05) + relative_height_pattern_window + screen_rect.height() * (0.025))))
+            int(relative_x_pattern_window),
+            int(relative_y_pattern_window + screen_rect.height() * (
+                0.05) + relative_height_pattern_window + screen_rect.height() * (0.025) * 2),
+            int(relative_width_pattern_window),
+            int(0.9 - (relative_y_pattern_window + screen_rect.height() * (
+                0.05) + relative_height_pattern_window + screen_rect.height() * (0.025))))
 
         # Creating the toolbar
         self.toolbar = self.addToolBar("Toolbar")
         self.toolbar.setStyleSheet("background-color: #bfbfbf; border-radius: 10px; border-width: 1px;"
-                           "border-color: black; padding: 6px; font: bold 12px; color: white;"
-                           "text-align: center; border-style: solid;")
-        
+                                   "border-color: black; padding: 6px; font: bold 12px; color: white;"
+                                   "text-align: center; border-style: solid;")
+
         # Connecting the modeWidget to the Toolbar
         self.setMode()
-        self.mainWidget.modeWidget.toggle.stateChanged.connect(lambda : self.setMode())
+        self.mainWidget.modeWidget.toggle.stateChanged.connect(lambda: self.setMode())
 
         # Adding Widgets to the Toolbar
         self.toolbar.addWidget(self.mainWidget.modeWidget)
@@ -567,15 +577,16 @@ class Main_Window(QMainWindow):
         """
         if self.mainWidget.mode == "Manual":
             self.toolbar.setStyleSheet("background-color: #c55a11; border-radius: 10px; border-width: 2px;"
-                           "border-color: black; padding: 6px; font: bold 12px; color: white;"
-                           "text-align: center; border-style: solid;")
+                                       "border-color: black; padding: 6px; font: bold 12px; color: white;"
+                                       "text-align: center; border-style: solid;")
 
         elif self.mainWidget.mode == "Automatic":
             self.toolbar.setStyleSheet("background-color: #4472c4; border-radius: 10px; border-width: 2px;"
-                           "border-color: black; padding: 6px; font: bold 12px; color: white;"
-                           "text-align: center; border-style: solid;")
-            
-#-------------------------------------------------------------------------------------------------------
+                                       "border-color: black; padding: 6px; font: bold 12px; color: white;"
+                                       "text-align: center; border-style: solid;")
+
+
+# -------------------------------------------------------------------------------------------------------
 
 # Launching as main for tests
 if __name__ == "__main__":
@@ -585,4 +596,3 @@ if __name__ == "__main__":
     window.show()
 
     sys.exit(app.exec_())
-    
