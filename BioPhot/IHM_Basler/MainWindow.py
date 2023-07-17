@@ -22,16 +22,16 @@ from SaveToolbarWidget import Save_Widget
 # Colors
 """
 Colors :    Green  : #c5e0b4
-            Blue   : #4472c4    ( 68, 114, 196)
-             Light : #7fadff    (127, 173, 255)
-            Orange : #c55a11    (197,  90,  17)
-             Light : #ff8d3f    (255, 141,  63)
+            Blue   : #4472c4
+             Light : #7fadff
+            Orange : #c55a11
+             Light : #ff8d3f
             Beige  : #fff2cc
             Grey1  : #f2f2f2
             Grey2  : #bfbfbf
 """
 
-#-------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------
 
 class Main_Widget(QWidget):
     """
@@ -40,12 +40,12 @@ class Main_Widget(QWidget):
     Args:
         QWidget (class): QWidget can be put in another widget and / or window.
     """
+	
     def __init__(self, mode = "Automatic"):
         """
         Initialisation of the main Widget.
         """
         super().__init__()
-
         # Set some initialisation variables
         self.setStyleSheet("background: #f2f2f2;")
         self.mode = mode
@@ -132,6 +132,7 @@ class Main_Widget(QWidget):
         print(self.sensorSettingsWidget.FPS.getValue())
         self.cameraWidget.camera.set_frame_rate(self.sensorSettingsWidget.FPS.getValue())
 
+
         self.sensorSettingsWidget.FPS.slider.valueChanged.connect(
             lambda : self.cameraWidget.camera.set_frame_rate(self.sensorSettingsWidget.FPS.getValue()))
         self.sensorSettingsWidget.FPS.slider.valueChanged.connect(
@@ -142,6 +143,7 @@ class Main_Widget(QWidget):
         # Initialisation of the BlackLevel setting
         self.sensorSettingsWidget.blackLevel.slider.setMinimum(0)
         self.sensorSettingsWidget.blackLevel.slider.setMaximum(4095)
+
         self.sensorSettingsWidget.blackLevel.setValue(int(self.cameraWidget.camera.get_black_level())) # camera's blacklevel
 
         self.sensorSettingsWidget.blackLevel.slider.valueChanged.connect(
@@ -481,12 +483,14 @@ class Main_Widget(QWidget):
 #-------------------------------------------------------------------------------------------------------
 
 class Main_Window(QMainWindow):
+
     """
     Our main window.
 
     Args:
         QMainWindow (class): QMainWindow can contain several widgets.
     """
+	
     def __init__(self, mode = "Automatic"):
         """
         Initialisation of the main Window.
@@ -574,8 +578,8 @@ class Main_Window(QMainWindow):
             self.toolbar.setStyleSheet("background-color: #4472c4; border-radius: 10px; border-width: 2px;"
                            "border-color: black; padding: 6px; font: bold 12px; color: white;"
                            "text-align: center; border-style: solid;")
-            
-#-------------------------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------------------------
 
 # Launching as main for tests
 if __name__ == "__main__":
@@ -585,4 +589,3 @@ if __name__ == "__main__":
     window.show()
 
     sys.exit(app.exec_())
-    

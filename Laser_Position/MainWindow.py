@@ -26,24 +26,10 @@ Use
 # Libraries to import
 import sys
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QPushButton, QAction
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QPushButton, QVBoxLayout
 from PyQt6.QtGui import QIcon
-
-# -------------------------------
-
-class MainWidget(QWidget):
-    """
-    Main Widget of our Main Window.
-
-    Args:
-        QWidget (class): QWidget can be put in another widget and / or window.
-    """
-    def __init__(self):
-        """
-        Initialisation of the main Widget.
-        """
-        super().__init__()
-        self.setStyleSheet("background: #f2f2f2;")
+from MainMenu import MainMenu
+from IntroductionWidget import IntroductionWidget
 
 # -------------------------------
 
@@ -59,14 +45,30 @@ class MainWindow(QMainWindow):
         Initialisation of the main Window.
         """
         super().__init__()
-
+        self.setWindowIcon(QIcon('IOGS-LEnsE-logo.jpg'))
         # Variables
-        self.oneOrFour = 1
 
         # Define Window title
         self.setWindowTitle("Laser Position Control")
         self.setWindowIcon(QIcon('_inc/IOGS-LEnsE-logo.jpg'))
-        self.setGeometry(50, 50, 1600, 1200)
+        self.setGeometry(50, 50, 1000, 700)
+        
+        # Main Layout
+        self.main_widget = QWidget()
+        self.main_layout = QGridLayout()
+        self.main_layout.setColumnStretch(0, 1)
+        self.main_layout.setColumnStretch(1, 4)
+        self.main_widget.setLayout(self.main_layout)
+        
+        # Left Main Menu
+        self.main_menu = MainMenu()
+        self.main_layout.addWidget(self.main_menu, 0, 0)
+        
+        # Graphical objects
+        self.intro_widget = IntroductionWidget()
+        self.main_layout.addWidget(self.intro_widget, 0, 1)
+        
+        self.setCentralWidget(self.main_widget)
 
 
 # -------------------------------
@@ -78,4 +80,4 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

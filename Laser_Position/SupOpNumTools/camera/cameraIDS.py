@@ -204,8 +204,6 @@ class uEyeCamera:
             self.pitch = ueye.INT()
             
     def stop_camera(self):
-        self.stop_video()
-        self.un_alloc()
         ueye.is_ExitCamera(self.h_cam)
 
     def get_mem_info(self):
@@ -264,9 +262,30 @@ class uEyeCamera:
         ret = ueye.is_SetColorMode(self.h_cam, mode)
         if ret != ueye.IS_SUCCESS:
             raise uEye_ERROR("is_SetColorMode")
-
         self.nBitsPerPixel = get_bits_per_pixel(mode)
         self.colormode = mode
+
+    def is_colormode(self, mode):
+        """
+        Test if the colormode is valid.
+
+        Parameters
+        ----------
+        mode : int (from ueye)
+            Mode of color to test.
+
+        Returns
+        -------
+        bool : True if mode is compatible.
+        """
+        old_mode = self.get_colormode()
+        ret = ueye.is_SetColorMode(self.h_cam, mode)
+        self.set_colormode(old_mode)
+        if ret != ueye.IS_SUCCESS:
+            return False
+        else:
+            return True
+
 
     def get_exposure(self):
         exposure = ueye.double()
@@ -447,19 +466,24 @@ if __name__ == '__main__':
 
     camera.set_exposure_time(20)
     camera.set_colormode(get_cam_color_mode("MONO12"))
-    camera.set_aoi(0, 0, 100, 200)
+    max_w = camera.get_sensor_max_width()
+    max_h = camera.get_sensor_max_height()
+    print(f'M_W = {max_w} / M_H = {max_h}')
+    camera.set_aoi(0, 0, max_w, max_h)
     camera.alloc()
     camera.capture_video()
 
-    frame = camera.get_image()
-    print(type(frame))
-    print(frame.shape)
+    for i in range(10):
+        frame = camera.get_image()
+        print(type(frame))
+        print(frame.shape)
+        camera.stop_video()
+        camera.un_alloc()
+        camera.set_aoi(200, 300, 500, 200)
+        camera.alloc()
+        camera.capture_video()
 
-    camera.stop_video()
-    camera.un_alloc()
-    camera.set_aoi(200, 300, 500, 200)
-    camera.alloc()
-    camera.capture_video()
+
 
     frame = camera.get_image()
     print(type(frame))

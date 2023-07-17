@@ -133,9 +133,28 @@ class XYChartWidget(QWidget):
         self.plot_chart_widget.removeItem(self.plot_chart)
         self.plot_chart = self.plot_chart_widget.plot(self.plot_x_data,
                                                       self.plot_y_data)
-        mean_d = round(np.mean(self.plot_y_data), 2)
-        stdev_d = round(np.std(self.plot_y_data), 2)
-        self.set_information(f'Mean = {mean_d} / Standard Dev = {stdev_d}')
+
+    def update_infos(self, val=True):
+        """
+        Update mean and standard deviation data and display.
+
+        Parameters
+        ----------
+        val : bool
+            True to display mean and standard deviation.
+            False to display "acquisition in progress".
+
+        Returns
+        -------
+        None
+
+        """
+        if val:
+            mean_d = round(np.mean(self.plot_y_data), 2)
+            stdev_d = round(np.std(self.plot_y_data), 2)
+            self.set_information(f'Mean = {mean_d} / Standard Dev = {stdev_d}')
+        else:
+            self.set_information('Data Acquisition In Progress')
 
     def set_title(self, title):
         """

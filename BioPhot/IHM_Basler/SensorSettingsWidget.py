@@ -19,6 +19,9 @@ class Sensor_Settings_Widget(QWidget):
         Initialisation of our widget.
         """
         super().__init__()
+        self.setStyleSheet("background-color: #c55a11; border-radius: 10px; border-width: 1px;"
+                           "border-color: black; padding: 6px; font: bold 12px; color: white;"
+                           "text-align: center; border-style: solid;")
         
         group_box = QGroupBox("Sensor Settings")
 
@@ -57,7 +60,7 @@ class Sensor_Settings_Widget(QWidget):
                            "text-align: center; border-style: solid;")
         else:
             self.setStyleSheet("background-color: #bfbfbf; border-radius: 10px; border-width: 2px;"
-                           "border-color: black; padding: 6px; font: bold 12px; color: white;"
+							"border-color: black; padding: 6px; font: bold 12px; color: white;"
                            "text-align: center; border-style: solid;")
 
 #-------------------------------------------------------------------------------------------------------
@@ -80,7 +83,6 @@ class Setting_Widget_Int(QWidget):
             initialisationValue (int, optional): base value of the setting. Defaults to 50.
         """
         super().__init__()
-        
         self.setStyleSheet("border-style: none")
 
         # Setting slider parameters

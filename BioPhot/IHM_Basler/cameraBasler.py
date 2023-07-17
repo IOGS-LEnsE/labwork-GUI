@@ -66,7 +66,6 @@ class BaslerCamera():
     def init(self):
         self.h_cam.Open()
         if self.h_cam.IsOpen():
-            print('CLOSE CAM')
             #self.h_cam.Gain.SetValue(2.5)
             self.h_cam.Close()
             return True
@@ -193,6 +192,7 @@ class BaslerCamera():
                 self.h_cam.Open()
 
                 grab_result = self.h_cam.GrabOne(20000)
+                grab_result = self.h_cam.GrabOne(5000)
 
                 if grab_result.GrabSucceeded():
                     # Get the image data as a numpy array
