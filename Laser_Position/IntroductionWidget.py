@@ -28,12 +28,16 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget,  QVBoxLayout
 from PyQt6.QtWidgets import QPushButton, QLabel
 from PyQt6.QtCore import pyqtSignal
 
-
+"""
+"""
 class IntroductionWidget(QWidget):
 
     intro_signal = pyqtSignal(str)
     
     def __init__(self):
+        """
+
+        """
         super().__init__()
         
         self.layout = QVBoxLayout()

@@ -24,29 +24,69 @@ Use
 # Libraries to import
 import sys
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget,  QVBoxLayout 
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
 from PyQt6.QtWidgets import QPushButton, QLabel
 from PyQt6.QtGui import QPainter, QPen, QColor, QBrush
 from PyQt6.QtCore import pyqtSignal
 
 
 class PhotodiodeWidget(QWidget):
+    """
+        Widget used to display 4-quadrants photodiode information.
+        Children of QWidget - QWidget can be put in another widget and / or window
+        ---
 
+        Attributes
+        ----------
+        layout : QLayout
+            layout of the widget
+        title_label : QLabel
+            label to display informations
+        target : PhotodiodeTarget
+            widget to display photodiode position in a target
+    """
     intro_signal = pyqtSignal(str)
-    
+
     def __init__(self):
+        """
+
+        """
         super().__init__()
-        
+
         self.layout = QVBoxLayout()
         self.title_label = QLabel('Photodiode Response')
         self.layout.addWidget(self.title_label)
-        
+
         self.target = PhotodiodeTarget()
         self.layout.addWidget(self.target)
-        
+
         self.setLayout(self.layout)
-        
-        
+
+    def set_position(self, x, y):
+        """
+        Set the position to display on the target
+
+        Parameters
+        ----------
+        x : float
+            position on x axis
+        y : float
+            position on y axis
+
+        Returns:
+            change the position on the graphical target
+        """
+        self.target.set_position(x, y)
+
+    def get_position(self):
+        """
+        Get the position of the photodiode
+
+        Returns:
+            x, y : float - corresponding to x and y axis position
+        """
+        return self.target.get_position()
+
 # -------------------------------
 
 # Colors
@@ -54,6 +94,7 @@ darkslategray = QColor(47, 79, 79)
 gray = QColor(128, 128, 128)
 lightgray = QColor(211, 211, 211)
 fuschia = QColor(255, 0, 255)
+
 
 class PhotodiodeTarget(QWidget):
     """
@@ -70,10 +111,9 @@ class PhotodiodeTarget(QWidget):
 
     Methods
     -------
-    info(additional=""):
-        Prints the person's name and age.    
+
     """
-    
+
     def __init__(self):
         """
         Initialization of the target.
@@ -81,8 +121,16 @@ class PhotodiodeTarget(QWidget):
         super().__init__()
         self.pos_x = 0
         self.pos_y = 0
-    
+
     def paintEvent(self, event):
+        """
+
+        Args:
+            event:
+
+        Returns:
+
+        """
         width = self.frameGeometry().width()
         height = self.frameGeometry().height()
         center_x = width // 2
@@ -91,15 +139,15 @@ class PhotodiodeTarget(QWidget):
         main_line = QPen(darkslategray)
         main_line.setWidth(5)
         painter.setPen(main_line)
-        painter.drawLine(center_x, 5, center_x, height-5)
-        painter.drawLine(5, center_y, width-5, center_y)
+        painter.drawLine(center_x, 5, center_x, height - 5)
+        painter.drawLine(5, center_y, width - 5, center_y)
         second_line = QPen(gray)
         second_line.setWidth(1)
         painter.setPen(second_line)
         for ki in range(21):
             if ki != 10:
-                painter.drawLine(5 + ki*(width-10) // 20, 5, 5 + ki*(width-10) // 20, height-5)
-                painter.drawLine(5, 5 + ki*(height-10) // 20, width-5, 5 + ki*(height-10) // 20)
+                painter.drawLine(5 + ki * (width - 10) // 20, 5, 5 + ki * (width - 10) // 20, height - 5)
+                painter.drawLine(5, 5 + ki * (height - 10) // 20, width - 5, 5 + ki * (height - 10) // 20)
         photodiode_point = QPen(fuschia)
         photodiode_point.setWidth(3)
         painter.setBrush(QBrush(fuschia))
@@ -110,6 +158,33 @@ class PhotodiodeTarget(QWidget):
         painter.drawLine(pos_x_real - 20, pos_y_real - 20, pos_x_real + 20, pos_y_real + 20)
         painter.drawLine(pos_x_real + 20, pos_y_real - 20, pos_x_real - 20, pos_y_real + 20)
 
+    def set_position(self, x, y):
+        """
+        Set the position to display on the target
+
+        Parameters
+        ----------
+        x : float
+            position on x axis
+        y : float
+            position on y axis
+
+        Returns:
+            change the position on the graphical target
+        """
+        self.pos_x = x
+        self.pos_y = y
+        self.paintEvent()
+
+    def get_position(self):
+        """
+        Get the position of the photodiode
+
+        Returns:
+            x, y : float - corresponding to x and y axis position
+        """
+        return self.pos_x, self.pos_y
+
 
 class MainWindow(QMainWindow):
     """
@@ -118,13 +193,14 @@ class MainWindow(QMainWindow):
     Args:
         QMainWindow (class): QMainWindow can contain several widgets.
     """
+
     def __init__(self):
         """
         Initialisation of the main Window.
         """
         super().__init__()
         self.intro = PhotodiodeWidget()
-        
+
         self.widget = QWidget()
         self.layout = QVBoxLayout()
         self.widget.setLayout(self.layout)

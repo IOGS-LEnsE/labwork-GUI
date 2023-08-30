@@ -30,6 +30,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QPu
 from PyQt6.QtGui import QIcon
 from MainMenu import MainMenu
 from IntroductionWidget import IntroductionWidget
+from PhotodiodeWidget import PhotodiodeWidget
 
 # -------------------------------
 
@@ -66,7 +67,8 @@ class MainWindow(QMainWindow):
         
         # Graphical objects
         self.intro_widget = IntroductionWidget()
-        self.main_layout.addWidget(self.intro_widget, 0, 1)
+        self.photodiode_widget = PhotodiodeWidget()
+        self.main_layout.addWidget(self.photodiode_widget, 0, 1)
         
         self.setCentralWidget(self.main_widget)
 
