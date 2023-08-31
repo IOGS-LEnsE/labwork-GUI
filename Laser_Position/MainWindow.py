@@ -28,9 +28,9 @@ import sys
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QPushButton, QVBoxLayout
 from PyQt6.QtGui import QIcon
-from MainMenu import MainMenu
-from IntroductionWidget import IntroductionWidget
-from PhotodiodeWidget import PhotodiodeWidget
+from widgets.MainMenu import MainMenu
+from widgets.IntroductionWidget import IntroductionWidget
+from widgets.PhotodiodeWidget import PhotodiodeWidget
 
 # -------------------------------
 

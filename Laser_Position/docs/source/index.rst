@@ -9,6 +9,9 @@ Welcome to Laser 2D Position Control GUI's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   
+   ./pages/nucleo
+   ./pages/application
 
 
 

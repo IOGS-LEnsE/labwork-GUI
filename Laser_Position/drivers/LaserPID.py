@@ -10,6 +10,7 @@ Laboratoire d Enseignement Experimental - Institut d Optique Graduate School
 Version : 1.0 - 2023-07-24
 """
 
+from SupOpNumTools.drivers import SerialConnect
 
 class LaserPID:
     """
@@ -31,12 +32,13 @@ class LaserPID:
 
     """
 
-    def __init__(self):
+    def __init__(self, baudrate = 115200):
         """
-        Initialization of the controller
+
+        Args:
+            baudrate:
         """
-        self.selected_port = None
-        self.serial_link = None
+        self.hardware_connection = SerialConnect(baudrate)
 
     def connect_to_hardware(self):
         print('connection')
