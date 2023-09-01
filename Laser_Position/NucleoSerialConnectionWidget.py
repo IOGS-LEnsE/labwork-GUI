@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QGridLayout, QComboBox, QSlider, QLineEdit,
     QVBoxLayout
     )
-from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtCore import QTimer, Qt, pyqtSignal
 
 ACTIVE_COLOR = "#45B39D"
 INACTIVE_COLOR = "#AF7AC5"
@@ -34,6 +34,8 @@ class NucleoSerialConnectionWidget(QWidget):
     Args:
         QWidget (class): QWidget can be put in another widget and / or window.
     """
+
+    connected = pyqtSignal(str)
 
     def __init__(self):
         """
@@ -120,6 +122,7 @@ class NucleoSerialConnectionWidget(QWidget):
                 self.connect_button.setText('CONNECTED')
                 self.refresh_button.setEnabled(False)
                 self.port_combo.setEnabled(False)
+                self.connected.emit('C')
 
     def disconnect(self):
         """

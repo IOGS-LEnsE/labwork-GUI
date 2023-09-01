@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Laser Position Control Interface
 
-Introduction Page
+Actuator Page
 
 ---------------------------------------
 (c) 2023 - LEnsE - Institut d'Optique
@@ -9,7 +9,7 @@ Introduction Page
 
 Modifications
 -------------
-    Creation on 2023/07/10
+    Creation on 2023/09/01
 
 
 Authors
@@ -18,7 +18,7 @@ Authors
 
 Use
 ---
-    >>> python PhotodiodeWidget.py
+    >>> python ActuatorWidget.py
 """
 
 # Libraries to import
@@ -39,9 +39,9 @@ active_style = "background:orange; color:white; font-weight:bold;"
 no_style = "background:gray; color:white; font-weight:none;"
 title_style = "background:darkgray; color:white; font-size:15px; font-weight:bold;"
 
-class PhotodiodeWidget(QWidget):
+class ActuatorWidget(QWidget):
     """
-        Widget used to display 4-quadrants photodiode information.
+        Widget used to control 2 axis scanners.
         Children of QWidget - QWidget can be put in another widget and / or window
         ---
 
@@ -54,7 +54,7 @@ class PhotodiodeWidget(QWidget):
         target : PhotodiodeTarget
             widget to display photodiode position in a target
     """
-    photodiode_signal = pyqtSignal(str)
+    actuator_signal = pyqtSignal(str)
 
     def __init__(self, camera=None):
         """
@@ -70,15 +70,9 @@ class PhotodiodeWidget(QWidget):
         self.control_widget = QWidget()
         self.control_layout = QVBoxLayout()
         self.control_widget.setLayout(self.control_layout)
-        self.title_label = QLabel('Photodiode Response')
+        self.title_label = QLabel('Scanner Manual Control')
         self.title_label.setStyleSheet(title_style)
         self.control_layout.addWidget(self.title_label)
-        self.control_start_ph = QPushButton('Start')
-        self.control_start_ph.clicked.connect(self.start_action)
-        self.control_layout.addWidget(self.control_start_ph)
-        self.control_stop_ph = QPushButton('Stop')
-        self.control_stop_ph.clicked.connect(self.stop_action)
-        self.control_layout.addWidget(self.control_stop_ph)
 
         self.layout.addWidget(self.control_widget, 0, 0)
 
@@ -91,13 +85,6 @@ class PhotodiodeWidget(QWidget):
 
         self.setLayout(self.layout)
 
-    def start_action(self):
-        self.photodiode_signal.emit('P_Start')
-        print('start')
-
-    def stop_action(self):
-        self.photodiode_signal.emit('P_Stop')
-        print('stop')
 
     def set_position(self, x, y):
         """

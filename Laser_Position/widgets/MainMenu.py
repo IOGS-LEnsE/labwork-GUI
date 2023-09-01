@@ -31,6 +31,7 @@ INACTIVE_COLOR = "#AF7AC5"
 
 valid_style = "background:" + ACTIVE_COLOR + "; color:white; font-weight:bold;"
 not_style = "background:" + INACTIVE_COLOR + "; color:white; font-weight:bold;"
+active_style = "background:orange; color:white; font-weight:bold;"
 no_style = "background:gray; color:white; font-weight:none;"
 title_style = "background:darkgray; color:white; font-size:15px; font-weight:bold;"
 
@@ -41,7 +42,7 @@ class MainMenu(QWidget):
     def __init__(self):
         super().__init__()
         
-        self.steps = 0
+        self.mode = 'O'
 
         self.menu_layout = QVBoxLayout()
         self.menu_layout.addStretch()
@@ -49,16 +50,18 @@ class MainMenu(QWidget):
         self.menu_introduction_button = QPushButton('Introduction')
         self.menu_layout.addWidget(self.menu_introduction_button)
         self.menu_introduction_button.setEnabled(False)
-        self.menu_introduction_button.setStyleSheet(valid_style)
+        self.menu_introduction_button.setStyleSheet(active_style)
         self.menu_layout.addStretch()
         
         self.menu_photodiode_button = QPushButton('Photodiode')
+        self.menu_photodiode_button.setEnabled(False)
         self.menu_photodiode_button.clicked.connect(self.photodiode_action)
         self.menu_layout.addWidget(self.menu_photodiode_button)
 
         self.menu_actuator_button = QPushButton('Actuator')
         self.menu_layout.addWidget(self.menu_actuator_button)
         self.menu_actuator_button.setEnabled(False)
+        self.menu_actuator_button.clicked.connect(self.actuator_action)
         self.menu_actuator_button.setStyleSheet(not_style)
 
         self.menu_PID_test_button = QPushButton('PID Test')
@@ -86,8 +89,43 @@ class MainMenu(QWidget):
         
         self.setLayout(self.menu_layout)
        
-    def photodiode_action(self, event):
-        print('Photodiode')
+    def photodiode_action(self):
+        if self.mode != 'O':
+            self.mode = 'P'
+            self.menu_signal.emit('P')
+            self.update_menu('P')
+
+    def actuator_action(self):
+        if self.mode != '0':
+            self.mode = 'A'
+            self.menu_signal.emit('A')
+            self.update_menu('A')
+
+    def update_menu(self, e):
+        if e == 'C': # connected
+            self.mode = 'C'
+            self.menu_photodiode_button.setEnabled(True)
+            self.menu_photodiode_button.setStyleSheet('')
+        elif e == 'P': # Photodiode
+            self.menu_introduction_button.setEnabled(False)
+            self.menu_introduction_button.setStyleSheet(valid_style)
+            self.menu_photodiode_button.setEnabled(False)
+            self.menu_photodiode_button.setStyleSheet(active_style)
+            self.menu_actuator_button.setEnabled(True)
+            self.menu_actuator_button.setStyleSheet('')
+            self.menu_PID_test_button.setEnabled(False)
+            self.menu_PID_test_button.setStyleSheet(not_style)
+        elif e == 'A': # Actuator
+            self.menu_photodiode_button.setEnabled(True)
+            self.menu_photodiode_button.setStyleSheet(valid_style)
+            self.menu_actuator_button.setEnabled(False)
+            self.menu_actuator_button.setStyleSheet(active_style)
+            self.menu_PID_test_button.setEnabled(True)
+            self.menu_PID_test_button.setStyleSheet('')
+
+    def disconnected_board(self):
+        self.menu_introduction_button.setStyleSheet(not_style)
+        self.menu_introduction_button.setEnabled(True)
 
 # -------------------------------
 

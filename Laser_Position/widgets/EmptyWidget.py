@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Laser Position Control Interface
 
-Introduction Page
+Empty Page
 
 ---------------------------------------
 (c) 2023 - LEnsE - Institut d'Optique
@@ -9,7 +9,7 @@ Introduction Page
 
 Modifications
 -------------
-    Creation on 2023/07/10
+    Creation on 2023/09/01
 
 
 Authors
@@ -18,36 +18,45 @@ Authors
 
 Use
 ---
-    >>> python IntroductionWidget.py
+    >>> python EmptyWidget.py
 """
 
 # Libraries to import
 import sys
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget,  QVBoxLayout 
-from PyQt6.QtWidgets import QPushButton, QLabel
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QLabel
 
-"""
-"""
-class IntroductionWidget(QWidget):
 
-    intro_signal = pyqtSignal(str)
-    
-    def __init__(self):
+class EmptyWidget(QWidget):
+    """
+        Widget used to display 4-quadrants photodiode information.
+        Children of QWidget - QWidget can be put in another widget and / or window
+        ---
+
+        Attributes
+        ----------
+        layout : QLayout
+            layout of the widget
+        title_label : QLabel
+            label to display informations
+    """
+
+    def __init__(self, title=''):
         """
 
         """
         super().__init__()
-        
+        self.title = title
+
         self.layout = QVBoxLayout()
-        self.title_label = QLabel('Laser Position Demonstration')
+        self.title_label = QLabel('Empty Widget '+title)
         self.layout.addWidget(self.title_label)
-        
+
         self.setLayout(self.layout)
-        
-        
-# -------------------------------
+
+
+# --------------------------------
 
 class MainWindow(QMainWindow):
     """
@@ -56,13 +65,14 @@ class MainWindow(QMainWindow):
     Args:
         QMainWindow (class): QMainWindow can contain several widgets.
     """
+
     def __init__(self):
         """
         Initialisation of the main Window.
         """
         super().__init__()
-        self.intro = IntroductionWidget()
-        
+        self.intro = EmptyWidget()
+
         self.widget = QWidget()
         self.layout = QVBoxLayout()
         self.widget.setLayout(self.layout)

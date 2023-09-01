@@ -9,6 +9,7 @@
 /*      - Théo MARTIN                                                       */
 /*      - Igor RESHETNIKOV                                                  */
 /*  Supervised by Caroline KULCSAR and Julien VILLEMEJANE                   */
+/*      Update 2023/09/01 by Julien VILLEMEJANE                             */
 /****************************************************************************/
 /*  Brochage                                                                */
 /*      TO COMPLETE                                                         */
@@ -337,7 +338,8 @@ int main()
                 if(mode == 'A'){
                     outX.write(0.5);
                     outY.write(0.5);
-                    tik_asst.attach(&alignement, 0.1);
+                    alignement();
+                    //tik_asst.attach(&alignement, 0.1);
                 }
                 if(mode == 'M'){
                     tik_asst.attach(&motor, 0.3); 

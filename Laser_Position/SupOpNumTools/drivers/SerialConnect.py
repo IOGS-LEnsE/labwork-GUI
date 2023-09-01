@@ -198,6 +198,9 @@ class SerialConnect:
         else:
             return False
 
+    def read_data(self, nb):
+        return self.serial_link.read(nb)
+
     def check_connection(self):
         # Sending data to check the connection
         self.send_data('C')

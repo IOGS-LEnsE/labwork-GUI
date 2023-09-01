@@ -26,11 +26,14 @@ Use
 # Libraries to import
 import sys
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QPushButton, QVBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget
 from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import QTimer
 from widgets.MainMenu import MainMenu
-from widgets.IntroductionWidget import IntroductionWidget
+from IntroductionWidget import IntroductionWidget
 from widgets.PhotodiodeWidget import PhotodiodeWidget
+from widgets.EmptyWidget import EmptyWidget
+from widgets.ActuatorWidget import ActuatorWidget
 
 # -------------------------------
 
@@ -48,6 +51,11 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowIcon(QIcon('IOGS-LEnsE-logo.jpg'))
         # Variables
+        self.main_timer = QTimer()
+        self.main_timer.timeout.connect(self.timer_action)
+        self.serial_link = None
+        self.camera = None  # TO ADD for embedded USB camera - with opencv
+        self.mode = 'O'
 
         # Define Window title
         self.setWindowTitle("Laser Position Control")
@@ -63,14 +71,59 @@ class MainWindow(QMainWindow):
         
         # Left Main Menu
         self.main_menu = MainMenu()
+        self.main_menu.menu_signal.connect(self.update_mode)
         self.main_layout.addWidget(self.main_menu, 0, 0)
         
         # Graphical objects
         self.intro_widget = IntroductionWidget()
-        self.photodiode_widget = PhotodiodeWidget()
-        self.main_layout.addWidget(self.photodiode_widget, 0, 1)
+        self.intro_widget.intro_signal.connect(self.update_mode)
+        self.main_layout.addWidget(self.intro_widget, 0, 1)
+        self.photodiode_widget = EmptyWidget()
+        self.actuator_widget = EmptyWidget()
         
         self.setCentralWidget(self.main_widget)
+        self.main_timer.setInterval(200)
+
+    def timer_action(self):
+        if self.mode == 'P':
+            self.serial_link.send_data('A_!')
+            while self.serial_link.is_data_waiting() is False:
+                pass
+            data = self.serial_link.read_data(self.serial_link.get_nb_data()).decode('ascii')
+            data_split = data.split('_')
+            self.photodiode_widget.set_position(int(float(data_split[1])), int(float(data_split[2])))
+            self.photodiode_widget.refresh_target()
+
+    def update_layout(self, new_widget):
+        count = self.main_layout.count()
+        if count > 1:
+            item = self.main_layout.itemAt(count - 1)
+            old_widget = item.widget()
+            old_widget.deleteLater()
+            self.main_layout.addWidget(new_widget, 0, 1)
+
+    def update_mode(self, e):
+        if e == 'C':
+            self.main_timer.start()
+            self.main_menu.update_menu('C')
+            self.serial_link = self.intro_widget.get_serial_link()
+        elif e == 'P':  # photodiode
+            self.photodiode_widget = PhotodiodeWidget(self.camera)
+            self.photodiode_widget.photodiode_signal.connect(self.update_photodiode)
+            self.update_layout(self.photodiode_widget)
+        elif e == 'A':  # actuator
+            self.actuator_widget = ActuatorWidget()
+            self.update_layout(self.actuator_widget)
+
+    def update_photodiode(self, e):
+        if e == 'P_Start':
+            self.main_timer.setInterval(100)
+            self.mode = 'P'
+        elif e == 'P_Stop':
+            self.serial_link.send_data('O')
+            self.mode = 'O'
+
+
 
 
 # -------------------------------
