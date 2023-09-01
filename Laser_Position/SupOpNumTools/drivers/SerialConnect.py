@@ -2,6 +2,7 @@
 """
 Hardware serial connection to a STMicroelectronics Nucleo board.
 
+----------------------------------------------------------------------------
 Co-Author : Julien VILLEMEJANE
 Laboratoire d Enseignement Experimental - Institut d Optique Graduate School
 Version : 1.0 - 2023-08-31

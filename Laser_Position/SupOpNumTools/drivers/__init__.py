@@ -16,3 +16,4 @@ Authors
 """
 
 from . import piezoNucleo
+from . import SerialConnect
