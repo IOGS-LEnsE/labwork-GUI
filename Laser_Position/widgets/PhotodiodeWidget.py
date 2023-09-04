@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Laser Position Control Interface
 
-Introduction Page
+Photodiode manual vizualisation
 
 ---------------------------------------
 (c) 2023 - LEnsE - Institut d'Optique
@@ -26,8 +26,8 @@ import sys
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QVBoxLayout
 from PyQt6.QtWidgets import QPushButton, QLabel
-from PyQt6.QtGui import QPainter, QPen, QColor, QBrush
 from PyQt6.QtCore import pyqtSignal
+from widgets.TargetWidget import TargetWidget
 
 # Global Constants
 ACTIVE_COLOR = "#45B39D"
@@ -86,7 +86,7 @@ class PhotodiodeWidget(QWidget):
         self.camera_widget.setStyleSheet('background-color:lightgray;')
         self.layout.addWidget(self.camera_widget, 0, 1)
 
-        self.target = PhotodiodeTarget()
+        self.target = TargetWidget()
         self.layout.addWidget(self.target, 1, 0, 1, 2)
 
         self.setLayout(self.layout)
@@ -128,105 +128,6 @@ class PhotodiodeWidget(QWidget):
         self.target.update()
 
 # -------------------------------
-
-# Colors
-darkslategray = QColor(47, 79, 79)
-gray = QColor(128, 128, 128)
-lightgray = QColor(211, 211, 211)
-fuschia = QColor(255, 0, 255)
-
-
-class PhotodiodeTarget(QWidget):
-    """
-    Graphical object to display photodiode position on a target.
-    
-    ...
-
-    Attributes
-    ----------
-    pos_x : float
-        position on X axis of the photodiode
-    pos_y : float
-        position on Y axis of the photodiode
-
-    Methods
-    -------
-
-    """
-
-    def __init__(self):
-        """
-        Initialization of the target.
-        """
-        super().__init__()
-        self.pos_x = 10
-        self.pos_y = -10
-
-    def paintEvent(self, event):
-        """
-
-        Args:
-            event:
-
-        Returns:
-
-        """
-        width = self.frameGeometry().width()
-        height = self.frameGeometry().height()
-        center_x = width // 2
-        center_y = height // 2
-        painter = QPainter(self)
-        main_line = QPen(darkslategray)
-        main_line.setWidth(5)
-        painter.setPen(main_line)
-        painter.drawLine(center_x, 5, center_x, height - 5)
-        painter.drawLine(5, center_y, width - 5, center_y)
-        second_line = QPen(gray)
-        second_line.setWidth(1)
-        painter.setPen(second_line)
-        for ki in range(21):
-            if ki != 10:
-                painter.drawLine(5 + ki * (width - 10) // 20, 5, 5 + ki * (width - 10) // 20, height - 5)
-                painter.drawLine(5, 5 + ki * (height - 10) // 20, width - 5, 5 + ki * (height - 10) // 20)
-        photodiode_point = QPen(fuschia)
-        photodiode_point.setWidth(3)
-        painter.setBrush(QBrush(fuschia))
-        painter.setPen(photodiode_point)
-        pos_x_real = center_x + self.pos_x
-        pos_y_real = center_y + self.pos_y
-        painter.drawEllipse(pos_x_real - 10, pos_y_real - 10, 20, 20)
-        painter.drawLine(pos_x_real - 20, pos_y_real - 20, pos_x_real + 20, pos_y_real + 20)
-        painter.drawLine(pos_x_real + 20, pos_y_real - 20, pos_x_real - 20, pos_y_real + 20)
-
-        # CHANGE RATIO !!
-
-    def set_position(self, x, y):
-        """
-        Set the position to display on the target
-
-        Parameters
-        ----------
-        x : float
-            position on x axis
-        y : float
-            position on y axis
-
-        Returns:
-            change the position on the graphical target
-        """
-        self.pos_x = x
-        self.pos_y = y
-        self.update()
-
-    def get_position(self):
-        """
-        Get the position of the photodiode
-
-        Returns:
-            x, y : float - corresponding to x and y axis position
-        """
-        return self.pos_x, self.pos_y
-
 
 class MainWindow(QMainWindow):
     """

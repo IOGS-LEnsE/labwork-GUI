@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Laser Position Control Interface
 
-Actuator Page
+Scanner manual control Widget
 
 ---------------------------------------
 (c) 2023 - LEnsE - Institut d'Optique
@@ -18,16 +18,18 @@ Authors
 
 Use
 ---
-    >>> python ActuatorWidget.py
+    >>> python ScannerWidget.py
 """
 
 # Libraries to import
 import sys
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QVBoxLayout
-from PyQt6.QtWidgets import QPushButton, QLabel
+from PyQt6.QtWidgets import QPushButton, QLabel, QSlider
 from PyQt6.QtGui import QPainter, QPen, QColor, QBrush
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, Qt
+
+from TargetWidget import TargetWidget
 
 # Global Constants
 ACTIVE_COLOR = "#45B39D"
@@ -80,10 +82,39 @@ class ScannerWidget(QWidget):
         self.camera_widget.setStyleSheet('background-color:lightgray;')
         self.layout.addWidget(self.camera_widget, 0, 1)
 
-        self.target = PhotodiodeTarget()
-        self.layout.addWidget(self.target, 1, 0, 1, 2)
+        self.widget_target_scan = QWidget()
+        self.layout_target_scan = QGridLayout()
+        self.widget_target_scan.setLayout(self.layout_target_scan)
+
+        # X axis
+        self.slider_x_ratio = 10.0
+        self.slider_x = QSlider(Qt.Orientation.Horizontal, self)
+        self.slider_x.sliderMoved.connect(self.update_position)
+        self.slider_x_label = QLabel('X = 0')
+        self.slider_x.setMinimum(-100)
+        self.slider_x.setMaximum(100)
+        self.slider_x.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.slider_x.setTickInterval(10)
+        self.layout_target_scan.addWidget(self.slider_x_label, 1, 0)
+        self.layout_target_scan.addWidget(self.slider_x, 0, 0)
+
+        self.pos_x_dec1 = QPushButton('X-1')
+        self.pos_x_zero = QPushButton('X=0')
+        self.pos_x_upd1 = QPushButton('X+1')
+        self.pos_x_dec1.clicked.connect(self.update_position)
+
+
+        self.layout.addWidget(self.widget_target_scan, 1, 0)
+
+        self.target_phd = TargetWidget()
+        self.layout.addWidget(self.target_phd, 1, 1)
 
         self.setLayout(self.layout)
+
+
+    def update_position(self, e):
+        self.slider_x_label.setText('X = '+str(self.slider_x.value()/self.slider_x_ratio))
+        self.slider_x_label.adjustSize()
 
 
     def set_position(self, x, y):

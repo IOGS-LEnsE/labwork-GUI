@@ -145,7 +145,6 @@ class SliderBlock(QWidget, QObject):
         self.slider.valueChanged.connect(self.slider_changed)
         self.name.clicked.connect(self.value_changed)
         self.set_value(self.real_value)
-        print(f'RV = {self.real_value}')
         self.update_display()
         self.update_GUI()
 

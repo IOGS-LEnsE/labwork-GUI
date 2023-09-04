@@ -33,7 +33,7 @@ from widgets.MainMenu import MainMenu
 from IntroductionWidget import IntroductionWidget
 from widgets.PhotodiodeWidget import PhotodiodeWidget
 from widgets.EmptyWidget import EmptyWidget
-from widgets.ActuatorWidget import ActuatorWidget
+from widgets.ScannerWidget import ScannerWidget
 
 # -------------------------------
 
@@ -79,13 +79,13 @@ class MainWindow(QMainWindow):
         self.intro_widget.intro_signal.connect(self.update_mode)
         self.main_layout.addWidget(self.intro_widget, 0, 1)
         self.photodiode_widget = EmptyWidget()
-        self.actuator_widget = EmptyWidget()
+        self.scanner_widget = EmptyWidget()
         
         self.setCentralWidget(self.main_widget)
         self.main_timer.setInterval(200)
 
     def timer_action(self):
-        if self.mode == 'P':
+        if self.mode == 'P': # Photodiode manual response
             self.serial_link.send_data('A_!')
             while self.serial_link.is_data_waiting() is False:
                 pass
@@ -93,6 +93,8 @@ class MainWindow(QMainWindow):
             data_split = data.split('_')
             self.photodiode_widget.set_position(int(float(data_split[1])), int(float(data_split[2])))
             self.photodiode_widget.refresh_target()
+        elif self.mode == 'A': # Scanner manual control
+            print('Scanner')
 
     def update_layout(self, new_widget):
         count = self.main_layout.count()
@@ -111,9 +113,12 @@ class MainWindow(QMainWindow):
             self.photodiode_widget = PhotodiodeWidget(self.camera)
             self.photodiode_widget.photodiode_signal.connect(self.update_photodiode)
             self.update_layout(self.photodiode_widget)
+            self.main_timer.setInterval(100)
         elif e == 'A':  # actuator
-            self.actuator_widget = ActuatorWidget()
-            self.update_layout(self.actuator_widget)
+            self.scanner_widget = ScannerWidget()
+            self.update_layout(self.scanner_widget)
+            self.main_timer.setInterval(200)
+
 
     def update_photodiode(self, e):
         if e == 'P_Start':
