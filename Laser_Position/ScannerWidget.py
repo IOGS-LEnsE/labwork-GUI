@@ -30,6 +30,7 @@ from PyQt6.QtGui import QColor
 from PyQt6.QtCore import pyqtSignal, Qt
 
 from SupOpNumTools.pyqt6.TargetWidget import TargetWidget
+from TargetSliderWidget import TargetSliderWidget
 
 # Global Constants
 ACTIVE_COLOR = "#45B39D"
@@ -82,64 +83,17 @@ class ScannerWidget(QWidget):
         self.camera_widget.setStyleSheet('background-color:lightgray;')
         self.layout.addWidget(self.camera_widget, 0, 1)
 
-        self.widget_target_scan = QWidget()
-        self.layout_target_scan = QGridLayout()
-        self.target_scan = TargetWidget()
-        self.layout_target_scan.addWidget(self.target_scan, 0, 2)
-        self.layout_target_scan.setColumnStretch(2, 5)
-        self.layout_target_scan.setRowStretch(2, 5)
-
-        self.target_scan_x_value = QLabel('')
-        self.layout_target_scan.addWidget(self.target_scan_x_value, 2, 2)
-        self.target_scan_y_value = QLabel('')
-        self.layout_target_scan.addWidget(self.target_scan_y_value, 1, 0)
-        self.target_scan_x_slider = QSlider(Qt.Orientation.Horizontal, self)
-        self.target_scan_x_slider.setMinimum(-10)
-        self.target_scan_x_slider.setMaximum(10)
-        self.target_scan_x_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
-        self.target_scan_x_slider.setTickInterval(2)
-        self.layout_target_scan.addWidget(self.target_scan_x_slider, 1, 2)
-
-        self.widget_target_scan.setLayout(self.layout_target_scan)
-
+        self.widget_target_scan = TargetSliderWidget()
         self.layout.addWidget(self.widget_target_scan, 1, 0)
 
-        # X axis
-        '''
-        self.slider_x_ratio = 10.0
-        self.slider_x = QSlider(Qt.Orientation.Horizontal, self)
-        self.slider_x.sliderMoved.connect(self.update_position)
-        self.slider_x_label = QLabel('X = 0')
-        self.slider_x.setMinimum(-100)
-        self.slider_x.setMaximum(100)
-        self.slider_x.setTickPosition(QSlider.TickPosition.TicksBelow)
-        self.slider_x.setTickInterval(10)
-        self.layout_target_scan.addWidget(self.slider_x_label, 1, 0)
-        self.layout_target_scan.addWidget(self.slider_x, 0, 0)
-
-        self.pos_x_dec1 = QPushButton('X-1')
-        self.pos_x_zero = QPushButton('X=0')
-        self.pos_x_upd1 = QPushButton('X+1')
-        self.pos_x_dec1.clicked.connect(self.update_position)
-
-
-        self.layout.addWidget(self.widget_target_scan, 1, 0)
-        '''
-
-        self.target_phd = TargetWidget()
-        self.layout.addWidget(self.target_phd, 1, 1)
+        self.widget_target_phd = TargetWidget()
+        self.layout.addWidget(self.widget_target_phd, 1, 1)
 
         self.layout.setColumnStretch(0, 1)
         self.layout.setColumnStretch(1, 1)
         self.layout.setRowStretch(0, 1)
         self.layout.setRowStretch(1, 1)
         self.setLayout(self.layout)
-
-
-    def update_position(self, e):
-        self.slider_x_label.setText('X = '+str(self.slider_x.value()/self.slider_x_ratio))
-        self.slider_x_label.adjustSize()
-
 
     def set_position(self, x, y):
         """
@@ -155,19 +109,13 @@ class ScannerWidget(QWidget):
         Returns:
             change the position on the graphical target
         """
-        self.target.set_position(x, y)
-
-    def get_position(self):
-        """
-        Get the position of the photodiode
-
-        Returns:
-            x, y : float - corresponding to x and y axis position
-        """
-        return self.target.get_position()
+        self.widget_target_phd.set_position(x, y)
 
     def refresh_target(self):
-        self.target.update()
+        self.widget_target_phd.update()
+
+    def get_scanner_position(self):
+        return self.widget_target_scan.get_x_value(), self.widget_target_scan.get_y_value()
 
 # -------------------------------
 

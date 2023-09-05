@@ -140,6 +140,7 @@ class NucleoSerialConnectionWidget(QWidget):
         """
         self.serial_link.send_data(data)
 
+
 # -------------------------------
 
 class MainWindow(QMainWindow):

@@ -342,7 +342,8 @@ int main()
                     //tik_asst.attach(&alignement, 0.1);
                 }
                 if(mode == 'M'){
-                    tik_asst.attach(&motor, 0.3); 
+                    motor();
+                    // tik_asst.attach(&motor, 0.3); 
                 }
 				if(mode == 'C'){	// Test connection
 					pc.printf("C_!\r\n");
