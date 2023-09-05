@@ -20,6 +20,7 @@ Use
 """
 
 import sys
+import numpy
 
 # Third pary imports
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLineEdit
@@ -30,8 +31,8 @@ from PyQt6.QtCore import QTimer, pyqtSignal, Qt
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, QRect
 from pyqtgraph import PlotWidget, plot, mkPen
 
-styleH1 = "font-size:16px; padding:7px; color:Navy; border-top: 1px solid Navy;"
-styleH = "font-size:14px; padding:4px; color:Navy;"
+styleH1 = "font-size:20px; padding:7px; color:Navy; border-top: 1px solid Navy;"
+styleH = "font-size:18px; padding:4px; color:Navy; font-weight:bold;"
 styleV = "font-size:14px; padding:2px; "
 
 
@@ -72,8 +73,10 @@ class IncDecWidget(QWidget):
 
         self.inc_button = QPushButton('+ '+str(self.ratio_gain))
         self.inc_button.clicked.connect(self.increase_value)
+        self.inc_button.setStyleSheet("background:#B41E5D; color:white; font-size:16px; font-weight:bold;")
         self.dec_button = QPushButton('- '+str(self.ratio_gain))
         self.dec_button.clicked.connect(self.decrease_value)
+        self.dec_button.setStyleSheet("background:#2192B6;font-size:16px; font-weight:bold;")
 
         self.gain_combo = QComboBox()
         self.gain_combo.addItems(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
@@ -96,8 +99,8 @@ class IncDecWidget(QWidget):
         self.main_layout.addWidget(self.user_value, 0, 2)  # Position 1,1 / 3 cells
         self.main_layout.addWidget(self.units_label, 0, 3)
         self.main_layout.addWidget(self.inc_button, 0, 4)
-        self.main_layout.addWidget(self.gain_combo, 0, 5)
-        self.main_layout.addWidget(self.set_zero_button, 0, 6)
+        self.main_layout.addWidget(self.gain_combo, 1, 4)
+        self.main_layout.addWidget(self.set_zero_button, 1, 2)
         self.setLayout(self.main_layout)
 
         ''' Events '''
@@ -105,7 +108,6 @@ class IncDecWidget(QWidget):
         # self.name.clicked.connect(self.value_changed)
         self.set_value(self.real_value)
         self.update_display()
-        self.update_GUI()
 
     def gain_changed(self):
         new_gain = self.gain_combo.currentText()
@@ -131,11 +133,9 @@ class IncDecWidget(QWidget):
 
     def set_enabled(self, value):
         self.enabled = value
-        self.update_GUI()
-
-    def update_GUI(self):
-        self.user_value.setEnabled(self.enabled)
-        self.name.setEnabled(self.enabled)
+        self.inc_button.setEnabled(value)
+        self.dec_button.setEnabled(value)
+        self.user_value.setEnabled(value)
 
     def value_changed(self, event):
         value = self.user_value.text()
@@ -176,6 +176,7 @@ class IncDecWidget(QWidget):
         if negative_nb:
             display_value = -display_value
             self.real_value = -self.real_value
+        display_value = numpy.round(display_value, 3)
         self.user_value.setText(f'{display_value}')
 
     def get_real_value(self):
@@ -183,7 +184,7 @@ class IncDecWidget(QWidget):
 
     def set_value(self, value):
         self.real_value = value
-        self.user_value.setText(str(value))
+        self.update_display()
 
     def set_gain(self, value):
         self.ratio_gain = value
@@ -191,6 +192,9 @@ class IncDecWidget(QWidget):
 
     def clear_value(self):
         self.real_value = 0
+        self.ratio_gain = 1.0
+        self.gain_combo.setCurrentIndex(3)
+        self.gain_changed()
         self.update_display()
 
 

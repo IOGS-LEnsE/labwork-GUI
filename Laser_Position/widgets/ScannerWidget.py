@@ -26,10 +26,10 @@ import sys
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QVBoxLayout
 from PyQt6.QtWidgets import QPushButton, QLabel, QSlider
-from PyQt6.QtGui import QPainter, QPen, QColor, QBrush
+from PyQt6.QtGui import QColor
 from PyQt6.QtCore import pyqtSignal, Qt
 
-from TargetWidget import TargetWidget
+from SupOpNumTools.pyqt6.TargetWidget import TargetWidget
 
 # Global Constants
 ACTIVE_COLOR = "#45B39D"
