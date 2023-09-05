@@ -25,6 +25,7 @@ Use
 
 # Libraries to import
 import sys
+import time
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget
 from PyQt6.QtGui import QIcon
@@ -33,7 +34,7 @@ from widgets.MainMenu import MainMenu
 from IntroductionWidget import IntroductionWidget
 from widgets.PhotodiodeWidget import PhotodiodeWidget
 from widgets.EmptyWidget import EmptyWidget
-from widgets.ScannerWidget import ScannerWidget
+from ScannerWidget import ScannerWidget
 
 # -------------------------------
 
@@ -89,6 +90,7 @@ class MainWindow(QMainWindow):
             self.serial_link.send_data('A_!')
             while self.serial_link.is_data_waiting() is False:
                 pass
+            time.sleep(0.01)
             data = self.serial_link.read_data(self.serial_link.get_nb_data()).decode('ascii')
             data_split = data.split('_')
             self.photodiode_widget.set_position(int(float(data_split[1])), int(float(data_split[2])))

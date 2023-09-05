@@ -84,9 +84,28 @@ class ScannerWidget(QWidget):
 
         self.widget_target_scan = QWidget()
         self.layout_target_scan = QGridLayout()
+        self.target_scan = TargetWidget()
+        self.layout_target_scan.addWidget(self.target_scan, 0, 2)
+        self.layout_target_scan.setColumnStretch(2, 5)
+        self.layout_target_scan.setRowStretch(2, 5)
+
+        self.target_scan_x_value = QLabel('')
+        self.layout_target_scan.addWidget(self.target_scan_x_value, 2, 2)
+        self.target_scan_y_value = QLabel('')
+        self.layout_target_scan.addWidget(self.target_scan_y_value, 1, 0)
+        self.target_scan_x_slider = QSlider(Qt.Orientation.Horizontal, self)
+        self.target_scan_x_slider.setMinimum(-10)
+        self.target_scan_x_slider.setMaximum(10)
+        self.target_scan_x_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.target_scan_x_slider.setTickInterval(2)
+        self.layout_target_scan.addWidget(self.target_scan_x_slider, 1, 2)
+
         self.widget_target_scan.setLayout(self.layout_target_scan)
 
+        self.layout.addWidget(self.widget_target_scan, 1, 0)
+
         # X axis
+        '''
         self.slider_x_ratio = 10.0
         self.slider_x = QSlider(Qt.Orientation.Horizontal, self)
         self.slider_x.sliderMoved.connect(self.update_position)
@@ -105,10 +124,15 @@ class ScannerWidget(QWidget):
 
 
         self.layout.addWidget(self.widget_target_scan, 1, 0)
+        '''
 
         self.target_phd = TargetWidget()
         self.layout.addWidget(self.target_phd, 1, 1)
 
+        self.layout.setColumnStretch(0, 1)
+        self.layout.setColumnStretch(1, 1)
+        self.layout.setRowStretch(0, 1)
+        self.layout.setRowStretch(1, 1)
         self.setLayout(self.layout)
 
 

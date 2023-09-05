@@ -73,10 +73,10 @@ class IncDecWidget(QWidget):
 
         self.inc_button = QPushButton('+ '+str(self.ratio_gain))
         self.inc_button.clicked.connect(self.increase_value)
-        self.inc_button.setStyleSheet("background:#B41E5D; color:white; font-size:16px; font-weight:bold;")
+        self.inc_button.setStyleSheet("background:#F3A13C; color:white; font-size:16px; font-weight:bold;")
         self.dec_button = QPushButton('- '+str(self.ratio_gain))
         self.dec_button.clicked.connect(self.decrease_value)
-        self.dec_button.setStyleSheet("background:#2192B6;font-size:16px; font-weight:bold;")
+        self.dec_button.setStyleSheet("background:#3EE4FD;font-size:16px; font-weight:bold;")
 
         self.gain_combo = QComboBox()
         self.gain_combo.addItems(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
@@ -85,22 +85,21 @@ class IncDecWidget(QWidget):
 
         self.set_zero_button = QPushButton('Set to 0')
         self.set_zero_button.clicked.connect(self.clear_value)
+        self.set_zero_button.setStyleSheet("font-size:10px;")
 
         self.main_layout.setColumnStretch(0, 2) # Dec button
         self.main_layout.setColumnStretch(1, 2) # Name
         self.main_layout.setColumnStretch(2, 3) # Value
-        self.main_layout.setColumnStretch(3, 1) # Units
-        self.main_layout.setColumnStretch(4, 2) # Inc button
-        self.main_layout.setColumnStretch(5, 3) # Gain
+        self.main_layout.setColumnStretch(3, 2) # Units
 
         ''' Adding GO into the widget layout '''
-        self.main_layout.addWidget(self.dec_button, 0, 0)
-        self.main_layout.addWidget(self.name, 0, 1)  # Position 1,0 / 3 cells
-        self.main_layout.addWidget(self.user_value, 0, 2)  # Position 1,1 / 3 cells
-        self.main_layout.addWidget(self.units_label, 0, 3)
-        self.main_layout.addWidget(self.inc_button, 0, 4)
-        self.main_layout.addWidget(self.gain_combo, 1, 4)
-        self.main_layout.addWidget(self.set_zero_button, 1, 2)
+        self.main_layout.addWidget(self.dec_button, 1, 0)
+        self.main_layout.addWidget(self.name, 0, 0)  # Position 1,0 / 3 cells
+        self.main_layout.addWidget(self.user_value, 1, 1)  # Position 1,1 / 3 cells
+        self.main_layout.addWidget(self.units_label, 1, 2)
+        self.main_layout.addWidget(self.inc_button, 1, 3)
+        self.main_layout.addWidget(self.gain_combo, 0, 3)
+        self.main_layout.addWidget(self.set_zero_button, 0, 1, 1, 2)
         self.setLayout(self.main_layout)
 
         ''' Events '''

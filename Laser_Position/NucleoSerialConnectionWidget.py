@@ -62,11 +62,6 @@ class NucleoSerialConnectionWidget(QWidget):
         self.layout.addWidget(self.port_combo)
         self.port_combo.currentTextChanged.connect(self.is_connection)
 
-        # Refresh button
-        self.refresh_button = QPushButton('Refresh List')
-        self.refresh_button.clicked.connect(self.refresh_list)
-        self.layout.addWidget(self.refresh_button)
-
         # Connect button
         self.connect_button = QPushButton('Connect')
         if len(self.ports) == 0:
@@ -80,7 +75,11 @@ class NucleoSerialConnectionWidget(QWidget):
         self.layout.addWidget(self.connect_button)
         self.connect_button.setStyleSheet(no_style)
 
-        #
+        # Refresh button
+        self.refresh_button = QPushButton('Refresh List')
+        self.refresh_button.clicked.connect(self.refresh_list)
+        self.layout.addWidget(self.refresh_button)
+
         self.setLayout(self.layout)
 
     def refresh_list(self):
