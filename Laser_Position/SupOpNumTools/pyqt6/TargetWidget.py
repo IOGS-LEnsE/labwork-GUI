@@ -53,13 +53,17 @@ class TargetWidget(QWidget):
 
     """
 
-    def __init__(self):
+    def __init__(self, x_min = -10, x_max = 10, y_min = -10, y_max = 10):
         """
         Initialization of the target.
         """
         super().__init__()
-        self.pos_x = 10
-        self.pos_y = -10
+        self.pos_x = 0
+        self.pos_y = 0
+        self.limit_x_max = x_max
+        self.limit_x_min = x_min
+        self.limit_y_max = y_max
+        self.limit_y_min = y_min
 
     def paintEvent(self, event):
         """
