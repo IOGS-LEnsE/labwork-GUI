@@ -136,7 +136,9 @@ class SerialConnect:
         if self.serial_link is not None and self.serial_link.isOpen() is False:
             self.serial_link.open()
             return True
-        else:
+        elif self.serial_link.isOpen():
+			return True
+		else:
             return False
 
     def is_serial_open(self):
@@ -166,7 +168,7 @@ class SerialConnect:
         else:
             return False
 
-    def get_nb_data(self):
+    def get_nb_data_waiting(self):
         """
         Get the number of data in the serial buffer
 

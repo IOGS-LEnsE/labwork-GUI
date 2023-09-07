@@ -35,6 +35,7 @@ from IntroductionWidget import IntroductionWidget
 from widgets.PhotodiodeWidget import PhotodiodeWidget
 from widgets.EmptyWidget import EmptyWidget
 from ScannerWidget import ScannerWidget
+from drivers.LaserPID import LaserPID
 
 
 # -------------------------------
@@ -56,7 +57,7 @@ class MainWindow(QMainWindow):
         # Variables
         self.main_timer = QTimer()
         self.main_timer.timeout.connect(self.timer_action)
-        self.serial_link = None
+        self.nucleo_board = LaserPID()
         self.camera = None  # TO ADD for embedded USB camera - with opencv
         self.mode = 'O'
 

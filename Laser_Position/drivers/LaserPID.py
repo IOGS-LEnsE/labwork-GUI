@@ -42,6 +42,43 @@ class LaserPID:
 
     def connect_to_hardware(self):
         print('connection')
+		
+	def is_connected(self):
+		pass
+	
+	def get_phd_xy(self):
+		return 0, 0
+	
+	def set_scan_xy(self, x, y):
+		pass
+		
+	def get_scan_xy(self):
+		return 0, 0
+		
+	def set_sampling_freq(self, fs):
+		pass
+	
+	def set_open_loop_steps(self, x1, y1, x2, y2):
+		pass
+		
+	def set_open_loop_samples(self, n):
+		# Not yet implemented in Hardware
+		pass
+	
+	def get_open_loop_data(self):
+		pass
+	
+	def set_PID_params(self, Kx, Ky, Ix=0, Iy=0, Dx=0, Dy=0):
+		pass
+
+	def start_PID_control(self):
+		pass
+		
+	def stop_PID_control(self):
+		pass
 
     def send_stop(self):
         print('send_stop')
+
+	def reset_scan(self):
+		pass
