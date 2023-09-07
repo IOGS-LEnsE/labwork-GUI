@@ -136,9 +136,9 @@ class SerialConnect:
         if self.serial_link is not None and self.serial_link.isOpen() is False:
             self.serial_link.open()
             return True
-        elif self.serial_link.isOpen():
-			return True
-		else:
+        elif self.serial_link.isOpen() :
+            return True
+        else :
             return False
 
     def is_serial_open(self):
@@ -211,7 +211,7 @@ class SerialConnect:
             time.sleep(0.1)
             cpt_time += 1
         if self.is_data_waiting() != 0:
-            data_received = self.serial_link.read(self.get_nb_data()).decode('ascii')
+            data_received = self.serial_link.read(self.get_nb_data_waiting()).decode('ascii')
             if data_received[0] == 'C':
                 return True
             else:

@@ -160,13 +160,12 @@ class MainWindow(QMainWindow):
             self.main_layout.addWidget(new_widget, 0, 1)
 
     def update_mode(self, e):
-        if self.serial_link  is not None :
-            self.serial_link.send_data('O_!')
+        if self.nucleo_board is not None :
+            self.nucleo_board.send_stop()
         if e == 'C':
             self.mode = 'C'
             self.main_timer.stop()
             self.main_menu.update_menu('C')
-            self.serial_link = self.intro_widget.get_serial_link()
         elif e == 'P':  # photodiode
             self.mode = 'P'
             self.main_timer.stop()
