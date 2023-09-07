@@ -87,7 +87,7 @@ class NucleoSerialConnectionWidget(QWidget):
         Refresh the available serial port.
 
         """
-        self.port_list = self.serial_link.get_serial_port_list()
+        self.port_list = self.serial_link.get_serial_ports_list()
         self.port_combo.clear()
         self.ports = [p.device for p in self.port_list]
         if len(self.ports) == 0:
