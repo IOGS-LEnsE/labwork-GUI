@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.main_menu, 0, 0)
 
         # Graphical objects
-        self.intro_widget = IntroductionWidget()
+        self.intro_widget = IntroductionWidget(self)
         self.intro_widget.intro_signal.connect(self.update_mode)
         self.main_layout.addWidget(self.intro_widget, 0, 1)
         self.photodiode_widget = EmptyWidget()
@@ -88,6 +88,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.main_widget)
         self.main_timer.setInterval(200)
 
+    def get_nucleo_board(self):
+        return self.nucleo_board
 
     def get_photodiode_value(self):
         """
@@ -160,9 +162,10 @@ class MainWindow(QMainWindow):
             self.main_layout.addWidget(new_widget, 0, 1)
 
     def update_mode(self, e):
-        if self.nucleo_board is not None :
+        if self.nucleo_board is not None and e != 'C':
             self.nucleo_board.send_stop()
         if e == 'C':
+            print('COnnected')
             self.mode = 'C'
             self.main_timer.stop()
             self.main_menu.update_menu('C')

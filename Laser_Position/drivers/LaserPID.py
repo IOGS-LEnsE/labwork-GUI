@@ -12,6 +12,7 @@ Version : 1.0 - 2023-07-24
 
 from SupOpNumTools.drivers.SerialConnect import SerialConnect
 
+
 class LaserPID:
     """
     Class for Laser PID Control hardware interface
@@ -32,7 +33,7 @@ class LaserPID:
 
     """
 
-    def __init__(self, baudrate = 115200):
+    def __init__(self, baudrate=115200):
         """
 
         Args:
@@ -41,47 +42,47 @@ class LaserPID:
         self.hardware_connection = SerialConnect(baudrate)
         self.connected = False
         self.serial_port = None
-    
+
     def set_serial_port(self, value):
         self.serial_port = value
-        
-    def get_ports_lits(self):
-        self.hardware_connection.get_serial_port_list()
+
+    def get_serial_ports_list(self):
+        return self.hardware_connection.get_serial_port_list()
 
     def connect_to_hardware(self):
-        print('connection')
-    
+        return self.hardware_connection.connect()
+
     def is_connected(self):
         return self.connected
-	
+
     def get_phd_xy(self):
         return 0, 0
-	
+
     def set_scan_xy(self, x, y):
         pass
-		
+
     def get_scan_xy(self):
         return 0, 0
-		
+
     def set_sampling_freq(self, fs):
         pass
-	
+
     def set_open_loop_steps(self, x1, y1, x2, y2):
         pass
-		
+
     def set_open_loop_samples(self, n):
         # Not yet implemented in Hardware
         pass
-	
+
     def get_open_loop_data(self):
         pass
-	
+
     def set_PID_params(self, Kx, Ky, Ix=0, Iy=0, Dx=0, Dy=0):
         pass
 
     def start_PID_control(self):
         pass
-		
+
     def stop_PID_control(self):
         pass
 

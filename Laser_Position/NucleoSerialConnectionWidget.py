@@ -10,7 +10,6 @@ Version : 1.0 - 2023-08-31
 
 # Standard
 import sys
-import SupOpNumTools.drivers.SerialConnect as sc
 
 # Graphical interface
 from PyQt6.QtWidgets import (
@@ -37,12 +36,13 @@ class NucleoSerialConnectionWidget(QWidget):
 
     connected = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, parent=None):
         """
         Initialisation of our camera widget.
         """
         super().__init__(parent=None)
-        self.serial_link = sc.SerialConnect()
+        self.parent = parent
+        self.serial_link = self.parent.get_nucleo_board() # LaserPID type
         self.layout = QVBoxLayout()
 
         # Title of the widget
@@ -51,7 +51,7 @@ class NucleoSerialConnectionWidget(QWidget):
         self.layout.addWidget(self.title_label)
 
         # Create List of available ports
-        self.port_list = self.serial_link.get_serial_port_list()
+        self.port_list = self.serial_link.get_serial_ports_list()
         self.port_combo = QComboBox(self)
         self.ports = [p.device for p in self.port_list]
         if len(self.ports) == 0:
@@ -114,7 +114,7 @@ class NucleoSerialConnectionWidget(QWidget):
 
         """
         self.serial_link.set_serial_port(self.port_combo.currentText())
-        if self.serial_link.connect():
+        if self.serial_link.connect_to_hardware():
             if self.serial_link.check_connection():
                 self.connect_button.setStyleSheet(valid_style)
                 self.connect_button.setEnabled(False)

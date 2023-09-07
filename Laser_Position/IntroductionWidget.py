@@ -36,11 +36,12 @@ class IntroductionWidget(QWidget):
 
     intro_signal = pyqtSignal(str)
     
-    def __init__(self):
+    def __init__(self, parent=None):
         """
 
         """
         super().__init__()
+        self.parent = parent
         
         self.layout = QVBoxLayout()
         # Title label
@@ -49,7 +50,7 @@ class IntroductionWidget(QWidget):
         self.layout.addWidget(self.title_label)
 
         # Connection combo list
-        self.connection_combo = NucleoSerialConnectionWidget()
+        self.connection_combo = NucleoSerialConnectionWidget(self.parent)
         self.layout.addWidget(self.connection_combo)
         self.connection_combo.connected.connect(self.connection)
         
@@ -57,9 +58,6 @@ class IntroductionWidget(QWidget):
 
     def connection(self):
         self.intro_signal.emit('C')
-
-    def get_serial_link(self):
-        return self.connection_combo.serial_link
         
 # -------------------------------
 
