@@ -10,7 +10,6 @@ Version : 1.0 - 2023-08-31
 
 import serial
 import serial.tools.list_ports
-import time
 
 class SerialConnect:
     """
@@ -202,22 +201,6 @@ class SerialConnect:
 
     def read_data(self, nb):
         return self.serial_link.read(nb)
-
-    def check_connection(self):
-        # Sending data to check the connection
-        self.send_data('C')
-        cpt_time = 0
-        while cpt_time < 10 and self.is_data_waiting() is False:
-            time.sleep(0.1)
-            cpt_time += 1
-        if self.is_data_waiting() != 0:
-            data_received = self.serial_link.read(self.get_nb_data_waiting()).decode('ascii')
-            if data_received[0] == 'C':
-                return True
-            else:
-                return False
-        else:
-            return False
 
 
 # Launching as main for tests

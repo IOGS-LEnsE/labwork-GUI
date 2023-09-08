@@ -58,21 +58,23 @@ class MainMenu(QWidget):
         self.menu_photodiode_button.clicked.connect(self.photodiode_action)
         self.menu_layout.addWidget(self.menu_photodiode_button)
 
-        self.menu_actuator_button = QPushButton('Actuator')
-        self.menu_layout.addWidget(self.menu_actuator_button)
-        self.menu_actuator_button.setEnabled(False)
-        self.menu_actuator_button.clicked.connect(self.actuator_action)
-        self.menu_actuator_button.setStyleSheet(not_style)
+        self.menu_scanner_button = QPushButton('Scanner')
+        self.menu_layout.addWidget(self.menu_scanner_button)
+        self.menu_scanner_button.setEnabled(False)
+        self.menu_scanner_button.clicked.connect(self.scanner_action)
+        self.menu_scanner_button.setStyleSheet(not_style)
 
         self.menu_PID_test_button = QPushButton('PID Test')
         self.menu_layout.addWidget(self.menu_PID_test_button)
         self.menu_PID_test_button.setEnabled(False)
+        self.menu_PID_test_button.clicked.connect(self.PID_test_action)
         self.menu_PID_test_button.setStyleSheet(not_style)
         self.menu_layout.addStretch()
 
         self.menu_central_position_button = QPushButton('Central Position')
         self.menu_layout.addWidget(self.menu_central_position_button)
         self.menu_central_position_button.setEnabled(False)
+        self.menu_central_position_button.clicked.connect(self.central_position_action)
         self.menu_central_position_button.setStyleSheet(not_style)
 
         self.menu_open_loop_button = QPushButton('Open Loop')
@@ -95,11 +97,23 @@ class MainMenu(QWidget):
             self.menu_signal.emit('P')
             self.update_menu('P')
 
-    def actuator_action(self):
+    def scanner_action(self):
         if self.mode != '0':
-            self.mode = 'A'
-            self.menu_signal.emit('A')
-            self.update_menu('A')
+            self.mode = 'S'
+            self.menu_signal.emit('S')
+            self.update_menu('S')
+
+    def PID_test_action(self):
+        if self.mode != '0':
+            self.mode = 'T'
+            self.menu_signal.emit('T')
+            self.update_menu('T')
+
+    def central_position_action(self):
+        if self.mode != '0':
+            self.mode = 'E'
+            self.menu_signal.emit('E')
+            self.update_menu('E')
 
     def update_menu(self, e):
         if e == 'C': # connected
@@ -111,17 +125,39 @@ class MainMenu(QWidget):
             self.menu_introduction_button.setStyleSheet(valid_style)
             self.menu_photodiode_button.setEnabled(False)
             self.menu_photodiode_button.setStyleSheet(active_style)
-            self.menu_actuator_button.setEnabled(True)
-            self.menu_actuator_button.setStyleSheet('')
+            self.menu_scanner_button.setEnabled(True)
+            self.menu_scanner_button.setStyleSheet('')
             self.menu_PID_test_button.setEnabled(False)
             self.menu_PID_test_button.setStyleSheet(not_style)
-        elif e == 'A': # Actuator
+        elif e == 'S': # Scanner
             self.menu_photodiode_button.setEnabled(True)
             self.menu_photodiode_button.setStyleSheet(valid_style)
-            self.menu_actuator_button.setEnabled(False)
-            self.menu_actuator_button.setStyleSheet(active_style)
+            self.menu_scanner_button.setEnabled(False)
+            self.menu_scanner_button.setStyleSheet(active_style)
             self.menu_PID_test_button.setEnabled(True)
             self.menu_PID_test_button.setStyleSheet('')
+            self.menu_central_position_button.setEnabled(False)
+            self.menu_central_position_button.setStyleSheet(not_style)
+        elif e == 'T': # PID Test
+            self.menu_scanner_button.setEnabled(True)
+            self.menu_scanner_button.setStyleSheet(valid_style)
+            self.menu_PID_test_button.setEnabled(False)
+            self.menu_PID_test_button.setStyleSheet(active_style)
+            self.menu_central_position_button.setEnabled(True)
+            self.menu_central_position_button.setStyleSheet('')
+            self.menu_photodiode_button.setEnabled(False)
+            self.menu_open_loop_button.setEnabled(False)
+            self.menu_open_loop_button.setStyleSheet(not_style)
+
+        elif e == 'E': # Central position
+            self.menu_PID_test_button.setEnabled(True)
+            self.menu_PID_test_button.setStyleSheet(valid_style)
+            self.menu_central_position_button.setEnabled(False)
+            self.menu_central_position_button.setStyleSheet(active_style)
+            self.menu_open_loop_button.setEnabled(True)
+            self.menu_open_loop_button.setStyleSheet('')
+            self.menu_scanner_button.setEnabled(False)
+
 
     def disconnected_board(self):
         self.menu_introduction_button.setStyleSheet(not_style)

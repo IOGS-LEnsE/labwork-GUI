@@ -25,16 +25,17 @@ Use
 
 # Libraries to import
 import sys
-import time
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QTimer
 from widgets.MainMenu import MainMenu
-from IntroductionWidget import IntroductionWidget
+from widgets.IntroductionWidget import IntroductionWidget
 from widgets.PhotodiodeWidget import PhotodiodeWidget
 from widgets.EmptyWidget import EmptyWidget
-from ScannerWidget import ScannerWidget
+from widgets.ScannerWidget import ScannerWidget
+from widgets.TestPIDWidget import TestPIDWidget
+from widgets.CentralPositionWidget import CentralPositionWidget
 from drivers.LaserPID import LaserPID
 
 
@@ -82,8 +83,7 @@ class MainWindow(QMainWindow):
         self.intro_widget = IntroductionWidget(self)
         self.intro_widget.intro_signal.connect(self.update_mode)
         self.main_layout.addWidget(self.intro_widget, 0, 1)
-        self.photodiode_widget = EmptyWidget()
-        self.scanner_widget = EmptyWidget()
+        self.central_widget = EmptyWidget()
 
         self.setCentralWidget(self.main_widget)
         self.main_timer.setInterval(200)
@@ -102,15 +102,7 @@ class MainWindow(QMainWindow):
             x, y :float
                 x and y position of the photodiode
         """
-        self.serial_link.send_data('A_!')
-        while self.serial_link.is_data_waiting() is False:
-            pass
-        data = self.serial_link.read_data(self.serial_link.get_nb_data()).decode('ascii')
-        data_split = data.split('_')
-        if len(data_split) == 4:
-            return int(float(data_split[1])), int(float(data_split[2]))
-        else:
-            return None, None
+        return self.nucleo_board.get_phd_xy()
 
     def set_scanner_position(self, x, y):
         """
@@ -129,29 +121,20 @@ class MainWindow(QMainWindow):
             x, y :float
                 x and y position of the photodiode
         """
-        data = 'M_' + str(x) + '_' + str(y) + '_!'
-        self.serial_link.send_data(data)
-        while self.serial_link.is_data_waiting() is False:
-            pass
-        data = self.serial_link.read_data(self.serial_link.get_nb_data()).decode('ascii')
-        data_split = data.split('_')
-        if len(data_split) == 6:
-            return int(float(data_split[3])), int(float(data_split[4]))
-        else:
-            return None, None
+        return self.nucleo_board.set_scan_xy(x, y)
 
     def timer_action(self):
         if self.mode == 'P':  # Photodiode manual response
             x_phd_value, y_phd_value = self.get_photodiode_value()
             if x_phd_value is not None:
-                self.photodiode_widget.set_position(x_phd_value, y_phd_value)
-            self.photodiode_widget.refresh_target()
-        elif self.mode == 'A':  # Scanner manual control
-            scanner_x, scanner_y = self.scanner_widget.get_scanner_position()
+                self.central_widget.set_position(x_phd_value, y_phd_value)
+            self.central_widget.refresh_target()
+        elif self.mode == 'S':  # Scanner manual control
+            scanner_x, scanner_y = self.central_widget.get_scanner_position()
             x_phd_value, y_phd_value = self.set_scanner_position(scanner_x, scanner_y)
             if x_phd_value is not None:
-                self.scanner_widget.set_position(x_phd_value, y_phd_value)
-            self.scanner_widget.refresh_target()
+                self.central_widget.set_position(x_phd_value, y_phd_value)
+            self.central_widget.refresh_target()
 
     def update_layout(self, new_widget):
         count = self.main_layout.count()
@@ -172,16 +155,26 @@ class MainWindow(QMainWindow):
         elif e == 'P':  # photodiode
             self.mode = 'P'
             self.main_timer.stop()
-            self.photodiode_widget = PhotodiodeWidget(self.camera)
-            self.photodiode_widget.photodiode_signal.connect(self.update_photodiode)
-            self.update_layout(self.photodiode_widget)
+            self.central_widget = PhotodiodeWidget(self.camera)
+            self.central_widget.photodiode_signal.connect(self.update_photodiode)
+            self.update_layout(self.central_widget)
             self.main_timer.setInterval(100)
-        elif e == 'A':  # actuator
-            self.mode = 'A'
-            self.scanner_widget = ScannerWidget()
-            self.update_layout(self.scanner_widget)
+        elif e == 'S':  # scanner
+            self.mode = 'S'
+            self.central_widget = ScannerWidget()
+            self.update_layout(self.central_widget)
             self.main_timer.setInterval(200)
             self.main_timer.start()
+        elif e == 'T': # test PID
+            self.mode = 'T'
+            self.main_timer.stop()
+            self.central_widget = TestPIDWidget()
+            self.update_layout(self.central_widget)
+        elif e == 'E': # central position
+            self.mode = 'C'
+            self.main_timer.stop()
+            self.central_widget = CentralPositionWidget()
+            self.update_layout(self.central_widget)
 
     def update_photodiode(self, e):
         if e == 'P_Start':
@@ -189,7 +182,7 @@ class MainWindow(QMainWindow):
             self.main_timer.start()
             self.mode = 'P'
         elif e == 'P_Stop':
-            self.serial_link.send_data('O')
+            self.nucleo_board.send_stop()
             self.main_timer.stop()
             self.mode = 'O'
 

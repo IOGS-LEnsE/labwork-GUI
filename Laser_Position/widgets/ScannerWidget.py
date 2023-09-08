@@ -30,7 +30,7 @@ from PyQt6.QtGui import QColor
 from PyQt6.QtCore import pyqtSignal, Qt
 
 from SupOpNumTools.pyqt6.TargetWidget import TargetWidget
-from TargetSliderWidget import TargetSliderWidget
+from widgets.TargetSliderWidget import TargetSliderWidget
 
 # Global Constants
 ACTIVE_COLOR = "#45B39D"

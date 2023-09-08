@@ -25,10 +25,10 @@ Use
 import sys
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget,  QVBoxLayout 
-from PyQt6.QtWidgets import QPushButton, QLabel
+from PyQt6.QtWidgets import QLabel
 from PyQt6.QtCore import pyqtSignal
 
-from NucleoSerialConnectionWidget import NucleoSerialConnectionWidget
+from widgets.NucleoSerialConnectionWidget import NucleoSerialConnectionWidget
 
 """
 """

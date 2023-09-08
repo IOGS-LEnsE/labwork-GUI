@@ -95,8 +95,8 @@ class TargetWidget(QWidget):
         photodiode_point.setWidth(3)
         painter.setBrush(QBrush(fuschia))
         painter.setPen(photodiode_point)
-        pos_x_real = center_x + self.pos_x
-        pos_y_real = center_y + self.pos_y
+        pos_x_real = int(center_x + self.pos_x)
+        pos_y_real = int(center_y + self.pos_y)
         painter.drawEllipse(pos_x_real - 10, pos_y_real - 10, 20, 20)
         painter.drawLine(pos_x_real - 20, pos_y_real - 20, pos_x_real + 20, pos_y_real + 20)
         painter.drawLine(pos_x_real + 20, pos_y_real - 20, pos_x_real - 20, pos_y_real + 20)
