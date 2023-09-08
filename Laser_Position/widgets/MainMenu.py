@@ -154,9 +154,10 @@ class MainMenu(QWidget):
             self.menu_PID_test_button.setStyleSheet(valid_style)
             self.menu_central_position_button.setEnabled(False)
             self.menu_central_position_button.setStyleSheet(active_style)
+            self.menu_scanner_button.setEnabled(False)
+        elif e == 'D': # Central Position Validated
             self.menu_open_loop_button.setEnabled(True)
             self.menu_open_loop_button.setStyleSheet('')
-            self.menu_scanner_button.setEnabled(False)
 
 
     def disconnected_board(self):

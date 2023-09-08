@@ -25,7 +25,7 @@
 #define PER_STEP    0.0001
 #define PER_LED     2000
 #define MAX_CHAR    256
-#define N_SAMPLES   256
+#define N_SAMPLES   1024
 
 /* Modules pour Asservissement */
 Ticker      tik_asst;
@@ -52,6 +52,7 @@ double g_Kiy = 0;
 double g_Kdy = 0;
 double g_sampling_frequency = 1000;
 double g_sampling_period;
+int g_samples = 100;
 int g_indice = 0;
 /* Variables gloables pour Rampe / Step */
 double valX;
@@ -86,6 +87,9 @@ double sX_min = 0;
 double sX_max = 0;
 double sY_min = 0;
 double sY_max = 0;
+int sIndex = 0;         // index of the data to collect
+char sChannel = ' ';    // channel to collect {X, Y, S}
+bool sData = false;
 
 /*-------------------------------*/
 
@@ -110,7 +114,7 @@ void controlLoop(void)
     if (outyy < -0.5)
         outyy = -0.5;
     else if (outyy > 0.5)
-        outyy = 0.5;  
+        outyy = 0.5;
     //Set the new output duty cycle
     outX.write(outxx+0.5);
     outY.write(outyy+0.5);
@@ -137,12 +141,12 @@ void stepLoop(void){
             samplesX[g_indice-N_SAMPLES] = 2*100.0*((float) inX.read() - 0.5f);    //Real part NB removing DC offset
             samplesY[g_indice-N_SAMPLES] = 2*100.0*((float) inY.read() - 0.5f);    //Real part NB removing DC offset
             if(g_indice >= N_SAMPLES + 10)
-                samplesSTEP[g_indice-N_SAMPLES] = sX_max; 
+                samplesSTEP[g_indice-N_SAMPLES] = sX_max;
             else
-                samplesSTEP[g_indice-N_SAMPLES] = sX_min; 
+                samplesSTEP[g_indice-N_SAMPLES] = sX_min;
         }
         if(g_indice == 2*N_SAMPLES){
-            g_trig = 0; 
+            g_trig = 0;
         }
         g_indice += 1;
     }
@@ -159,13 +163,13 @@ void rampLoop(void){
     outX.write(valX);
     debug_out = 0;
     g_t_temp++;
-}  
+}
 
 /* Interrupt function for Matlab receiving data */
 void IT_Rx_Matlab(){
     tik_asst.detach();
     g_ch = pc.getc();   // read it
-    if ((g_index<MAX_CHAR-1) and (data_ok == 0)){           
+    if ((g_index<MAX_CHAR-1) and (data_ok == 0)){
         g_value[g_index]=g_ch;  // put it into the value array and increment the index
         g_index++;
     }
@@ -182,8 +186,8 @@ void IT_button_pressed(void){
     int k=0;
     do{
         pc.putc(g_value[k]);
-        k++;   
-    } while (g_value[k]!='\0');    // loop until the '\n' character    
+        k++;
+    } while (g_value[k]!='\0');    // loop until the '\n' character
 }
 
 /* alignement */
@@ -191,13 +195,13 @@ void alignement(void){
     g_DetX_toML=2*100.0*((float) inX.read() - 0.5f);
     g_DetY_toML=2*100.0*((float) inY.read() - 0.5f);
     wait_ms(10);
-    pc.printf("%c_%lf_%lf_!\r\n", mode, g_DetX_toML, g_DetY_toML); 
+    pc.printf("%c_%lf_%lf_!\r\n", mode, g_DetX_toML, g_DetY_toML);
 }
 
 /* motor */
 void motor(void){
     outX.write(g_Ux);
-    outY.write(g_Uy);   
+    outY.write(g_Uy);
     g_Ux_toML=2*100*(g_Ux-0.5);
     g_Uy_toML=2*100*(g_Uy-0.5);
     g_DetX_toML=2*100.0*((float) inX.read() - 0.5f);
@@ -234,11 +238,27 @@ int read_command()
             g_Kpx = 1;  g_Kpy = 1;
             g_Kix = 0;  g_Kiy = 0;
             g_Kdx = 0;  g_Kdy = 0;
-            sscanf(g_value, "S_%lf_%lf_%lf_%lf_%lf_!\r\n", &sX_min, &sX_max, &sY_min, &sY_max, &g_sampling_frequency);
+            sscanf(g_value, "S_%lf_%lf_%lf_%lf_%lf_%d_!\r\n", &sX_min, &sX_max, &sY_min, &sY_max, &g_sampling_frequency, &g_samples);
+            if(g_samples > N_SAMPLES){
+                g_samples = N_SAMPLES;
+                pc.printf("S_NK!\r\n");
+            }
+            else{
+                pc.printf("S_OK!\r\n");
+            }
             g_sampling_period = 1.0 / g_sampling_frequency;
             g_trig = 1;
             g_indice = 0;
-            pc.printf("S_OK!\r\n");
+            return 1;
+        case 'T':  // Step data
+            mode = 'T';
+            sscanf(g_value, "T_%c_%d_!\r\n", &sChannel, &sIndex);
+            sData = true;
+            return 1;
+        case 'R':   // Reset Step mode
+            sscanf(g_value, "R_!\r\n");
+            g_trig = 2;
+            g_indice = 0;
             return 1;
         case 'M':
             mode = 'M';
@@ -270,7 +290,7 @@ int read_command()
             g_Kix = 0;  g_Kiy = 0;
             g_Kdx = 0;  g_Kdy = 0;
             g_sampling_period = 1.0;
-        default : 
+        default :
             mode = '0';
             return 0;
     }
@@ -294,21 +314,24 @@ int main()
     g_sampling_period = (float) PER_ACQ;
     //Run the PID control loop every 1ms
     tik_asst.attach(&controlLoop, g_sampling_period);
-    
+
     pc.printf("im here !!\r\n");
-    
+
     while (true) {
-     
+
         if(g_t_temp>=periode_led) // LED blinking
-        {    
+        {
             g_t_temp=0;
             out_led = !out_led;
         }
-        
+
         if((mode == 'S') and (g_trig == 0)){
             tik_asst.detach();
-            // SENDING DATA    
-            for(int i=0; i < N_SAMPLES; i++){
+        }
+        /*
+
+            // SENDING DATA
+            for(int i=0; i < g_samples; i++){
                 pc.printf("S_x_%d_%lf_!\r\n", i+1, samplesX[i]);
                 wait_ms(10);
                 pc.printf("S_y_%d_%lf_!\r\n", i+1, samplesY[i]);
@@ -320,30 +343,54 @@ int main()
             g_trig = 2;
             g_indice = 0;
         }
- 
+        */
+
         if(data_ok){
             tik_asst.detach();
             data_ok = 0;
             g_index = 0;
             int comm_ok = read_command();//recognizing coefficients
-            if(comm_ok){   
+            if(comm_ok){
                 if((mode == 'P') or (mode == 'I') or (mode == 'D')){
                     pc.printf("%c_OK! gX = %lf gY = %lf Fe = %lf\r\n", mode, g_Kpx, g_Kpy, g_sampling_frequency);
                     updatePID();
                     tik_asst.attach(&controlLoop, g_sampling_period);
-                } 
+                }
                 if(mode == 'S'){
                     tik_asst.attach(&stepLoop, g_sampling_period);
+                }
+                if(mode == 'T'){
+                    if(sData == true){
+                        int index = -1;
+                        float value = 0;
+                        if(sIndex < g_samples){
+                            index = sIndex;
+                            switch(sChannel){
+                                case 'X':
+                                    value = samplesX[index];
+                                    break;
+                                case 'Y':
+                                    value = samplesY[index];
+                                    break;
+                                case 'S':
+                                    value = samplesSTEP[index];
+                                    break;
+                                default:
+                                    value = 0;
+                                    break;
+                            }
+                        }
+                        pc.printf("T_%c_%d_%lf_!\r\n", sChannel, index, value);
+                        sData = false;
+                    }
                 }
                 if(mode == 'A'){
                     outX.write(0.5);
                     outY.write(0.5);
                     alignement();
-                    //tik_asst.attach(&alignement, 0.1);
                 }
                 if(mode == 'M'){
                     motor();
-                    // tik_asst.attach(&motor, 0.3); 
                 }
 				if(mode == 'C'){	// Test connection
 					pc.printf("C_!\r\n");

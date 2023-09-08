@@ -66,38 +66,29 @@ class PhotodiodeWidget(QWidget):
 
         self.layout = QGridLayout()
 
-        # Control Panel
-        self.control_widget = QWidget()
-        self.control_layout = QVBoxLayout()
-        self.control_widget.setLayout(self.control_layout)
+        # Title
         self.title_label = QLabel('Photodiode Response')
         self.title_label.setStyleSheet(title_style)
-        self.control_layout.addWidget(self.title_label)
-        self.control_start_ph = QPushButton('Start')
-        self.control_start_ph.clicked.connect(self.start_action)
-        self.control_layout.addWidget(self.control_start_ph)
-        self.control_stop_ph = QPushButton('Stop')
-        self.control_stop_ph.clicked.connect(self.stop_action)
-        self.control_layout.addWidget(self.control_stop_ph)
+        self.layout.addWidget(self.title_label, 0, 0)
 
-        self.layout.addWidget(self.control_widget, 0, 0)
+        self.display_widget = QWidget()
+        self.display_layout = QVBoxLayout()
+        self.x_display = QLabel('X = ')
+        self.display_layout.addWidget(self.x_display)
+        self.y_display = QLabel('Y = ')
+        self.display_layout.addWidget(self.y_display)
+        self.display_widget.setLayout(self.display_layout)
+        self.layout.addWidget(self.display_widget, 1, 0)
 
         self.camera_widget = QWidget()
         self.camera_widget.setStyleSheet('background-color:lightgray;')
         self.layout.addWidget(self.camera_widget, 0, 1)
 
         self.target = TargetWidget()
-        self.layout.addWidget(self.target, 1, 0, 1, 2)
+        self.layout.addWidget(self.target, 1, 1)
 
         self.setLayout(self.layout)
-
-    def start_action(self):
         self.photodiode_signal.emit('P_Start')
-        print('start')
-
-    def stop_action(self):
-        self.photodiode_signal.emit('P_Stop')
-        print('stop')
 
     def set_position(self, x, y):
         """
@@ -125,6 +116,9 @@ class PhotodiodeWidget(QWidget):
         return self.target.get_position()
 
     def refresh_target(self):
+        x, y = self.get_position()
+        self.x_display.setText('X = '+str(x))
+        self.y_display.setText('Y = '+str(y))
         self.target.update()
 
 # -------------------------------

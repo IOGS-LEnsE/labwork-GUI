@@ -57,25 +57,71 @@ class CentralPositionWidget(QWidget):
         target : PhotodiodeTarget
             widget to display photodiode position in a target
     """
-    actuator_signal = pyqtSignal(str)
+    checked_limits = pyqtSignal(str)
 
-    def __init__(self, camera=None):
+    def __init__(self, parent=None, camera=None):
         """
 
         """
         super().__init__()
 
         self.camera = camera
+        self.parent = parent
+        self.x_limit_min_set = False
+        self.x_limit_max_set = False
+        self.y_limit_min_set = False
+        self.y_limit_max_set = False
+        self.x_limit_min = 0
+        self.x_limit_max = 0
+        self.y_limit_min = 0
+        self.y_limit_max = 0
 
         self.layout = QGridLayout()
 
         # Control Panel
         self.control_widget = QWidget()
-        self.control_layout = QVBoxLayout()
+        self.control_layout = QGridLayout()
         self.control_widget.setLayout(self.control_layout)
         self.title_label = QLabel('Extrema Points for Open Loop Step Response')
         self.title_label.setStyleSheet(title_style)
-        self.control_layout.addWidget(self.title_label)
+        self.control_layout.addWidget(self.title_label, 0, 0, 1, 2)
+
+        self.x_limit_min_button = QPushButton('Xmin = ')
+        self.x_limit_min_button.clicked.connect(self.x_limit_min_action)
+        self.x_limit_min_label = QLabel('')
+        self.x_limit_min_label.setStyleSheet('background:orange;')
+        self.control_layout.addWidget(self.x_limit_min_button, 1, 0)
+        self.control_layout.addWidget(self.x_limit_min_label, 1, 1)
+
+        self.x_limit_max_button = QPushButton('Xmax = ')
+        self.x_limit_max_button.clicked.connect(self.x_limit_max_action)
+        self.x_limit_max_label = QLabel('')
+        self.x_limit_max_label.setStyleSheet('background:orange;')
+        self.control_layout.addWidget(self.x_limit_max_button, 2, 0)
+        self.control_layout.addWidget(self.x_limit_max_label, 2, 1)
+
+        self.y_limit_min_button = QPushButton('Ymin = ')
+        self.y_limit_min_button.clicked.connect(self.y_limit_min_action)
+        self.y_limit_min_label = QLabel('')
+        self.y_limit_min_label.setStyleSheet('background:orange;')
+        self.control_layout.addWidget(self.y_limit_min_button, 3, 0)
+        self.control_layout.addWidget(self.y_limit_min_label, 3, 1)
+
+        self.y_limit_max_button = QPushButton('Ymax = ')
+        self.y_limit_max_button.clicked.connect(self.y_limit_max_action)
+        self.y_limit_max_label = QLabel('')
+        self.y_limit_max_label.setStyleSheet('background:orange;')
+        self.control_layout.addWidget(self.y_limit_max_button, 4, 0)
+        self.control_layout.addWidget(self.y_limit_max_label, 4, 1)
+
+        self.checked_label = QLabel('NOT VALID')
+        self.checked_label.setStyleSheet('background:orange;')
+        self.control_layout.addWidget(self.checked_label, 5, 0, 1, 2)
+
+        self.update_button = QPushButton('Transfer to Hardware')
+        self.update_button.setEnabled(False)
+        self.update_button.clicked.connect(self.update_action)
+        self.control_layout.addWidget(self.update_button, 6, 0, 1, 2)
 
         self.layout.addWidget(self.control_widget, 0, 0)
 
@@ -84,6 +130,7 @@ class CentralPositionWidget(QWidget):
         self.layout.addWidget(self.camera_widget, 0, 1)
 
         self.widget_target_scan = TargetSliderWidget()
+        self.widget_target_scan.target_signal.connect(self.target_scan_action)
         self.layout.addWidget(self.widget_target_scan, 1, 0)
 
         self.widget_target_phd = TargetWidget()
@@ -94,6 +141,68 @@ class CentralPositionWidget(QWidget):
         self.layout.setRowStretch(0, 1)
         self.layout.setRowStretch(1, 1)
         self.setLayout(self.layout)
+
+    def update_action(self):
+        nuc_board = self.parent.get_nucleo_board()
+        nuc_board.set_open_loop_steps(self.x_limit_min, self.y_limit_min, self.x_limit_max, self.y_limit_max)
+        self.checked_limits.emit('CheckLimits')
+
+    def target_scan_action(self, e):
+        if e == 'R': # Reset
+            print('target_ reset')
+
+    def check_limits(self):
+        limits = self.y_limit_min_set and self.y_limit_max_set and self.x_limit_min_set and self.x_limit_max_set
+        if limits:
+            if self.y_limit_min > self.y_limit_max: # Swap
+                self.y_limit_min, self.y_limit_max = self.y_limit_max, self.y_limit_min
+                self.y_limit_min_label.setText(str(self.y_limit_min))
+                self.y_limit_max_label.setText(str(self.y_limit_max))
+            if self.x_limit_min > self.x_limit_max: # Swap
+                self.x_limit_min, self.x_limit_max = self.x_limit_max, self.x_limit_min
+                self.x_limit_min_label.setText(str(self.x_limit_min))
+                self.x_limit_max_label.setText(str(self.x_limit_max))
+            print('ok')
+            self.checked_label.setText('VALID')
+            self.checked_label.setStyleSheet('background:'+ ACTIVE_COLOR+';font-weight:bold;')
+            self.update_button.setEnabled(True)
+
+    def x_limit_min_action(self):
+        x, y = self.get_scanner_position()
+        self.x_limit_min_set = True
+        self.x_limit_min_label.setText(str(x))
+        self.x_limit_min_label.setStyleSheet('')
+        self.x_limit_min_label.setStyleSheet('font-weight:bold;')
+        self.x_limit_min = x
+        self.check_limits()
+
+    def x_limit_max_action(self):
+        x, y = self.get_scanner_position()
+        self.x_limit_max_set = True
+        self.x_limit_max_label.setText(str(x))
+        self.x_limit_max_label.setStyleSheet('')
+        self.x_limit_max_label.setStyleSheet('font-weight:bold;')
+        self.x_limit_max = x
+        self.check_limits()
+
+    def y_limit_min_action(self):
+        x, y = self.get_scanner_position()
+        self.y_limit_min_set = True
+        self.y_limit_min_label.setText(str(y))
+        self.y_limit_min_label.setStyleSheet('')
+        self.y_limit_min_label.setStyleSheet('font-weight:bold;')
+        self.y_limit_min = y
+        self.check_limits()
+
+    def y_limit_max_action(self):
+        x, y = self.get_scanner_position()
+        self.y_limit_max_set = True
+        self.y_limit_max_label.setText(str(y))
+        self.y_limit_max_label.setStyleSheet('')
+        self.y_limit_max_label.setStyleSheet('font-weight:bold;')
+        x, y = self.get_scanner_position()
+        self.y_limit_max = y
+        self.check_limits()
 
     def set_position(self, x, y):
         """
@@ -116,6 +225,9 @@ class CentralPositionWidget(QWidget):
 
     def get_scanner_position(self):
         return self.widget_target_scan.get_x_value(), self.widget_target_scan.get_y_value()
+
+    def get_limits(self):
+        return self.x_limit_min, self.x_limit_max, self.y_limit_min, self.y_limit_max
 
 # -------------------------------
 

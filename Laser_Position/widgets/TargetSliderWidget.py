@@ -56,7 +56,7 @@ class TargetSliderWidget(QWidget):
         target : PhotodiodeTarget
             widget to display photodiode position in a target
     """
-    actuator_signal = pyqtSignal(str)
+    target_signal = pyqtSignal(str)
 
     def __init__(self, camera=None):
         """
@@ -115,6 +115,7 @@ class TargetSliderWidget(QWidget):
         self.target_slider_x_slider.setValue(self.pos_x)
         self.target_slider_y_slider.setValue(self.pos_y)
         self.refresh_graph()
+        self.target_signal.emit('R')
     def slider_moved(self):
         self.pos_x = numpy.round(self.target_slider_x_slider.value()/self.ratio_slider, 1)
         self.pos_y = numpy.round(self.target_slider_y_slider.value()/self.ratio_slider, 1)

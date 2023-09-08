@@ -11,6 +11,7 @@ Version : 1.0 - 2023-07-24
 """
 
 import time
+import numpy
 
 from SupOpNumTools.drivers.SerialConnect import SerialConnect
 
@@ -48,6 +49,15 @@ class LaserPID:
         self.scan_y = 0
         self.phd_x = 0
         self.phd_y = 0
+        self.sampling_freq = 10000
+        self.samples = 100
+        self.x_limit_min = 0
+        self.x_limit_max = 0
+        self.y_limit_min = 0
+        self.y_limit_max = 0
+        self.x_data = None
+        self.y_data = None
+        self.step_data = None
 
     def set_serial_port(self, value):
         self.serial_port = value
@@ -99,17 +109,73 @@ class LaserPID:
     def get_scan_xy(self):
         return self.scan_x, self.scan_y
 
+    def get_sampling_freq(self):
+        return self.sampling_freq
+
     def set_sampling_freq(self, fs):
-        pass
+        self.sampling_freq = fs
 
     def set_open_loop_steps(self, x1, y1, x2, y2):
-        pass
+        self.x_limit_min = x1
+        self.x_limit_max = x2
+        self.y_limit_min = y1
+        self.y_limit_max = y2
 
     def set_open_loop_samples(self, n):
         # Not yet implemented in Hardware
-        pass
+        self.samples = n
+
+    def get_open_loop_samples(self):
+        return self.samples
+
+    def start_open_loop_step(self):
+        data = 'S_'+str(self.x_limit_min)+'_'+str(self.x_limit_max)+'_'
+        data += str(self.y_limit_min)+'_'+str(self.y_limit_max)+'_'
+        data += str(self.sampling_freq)+'_!\r\n'
+        self.hardware_connection.send_data(data)
+        # Acknowledgment waiting
+        while self.hardware_connection.is_data_waiting() is False:
+            pass
+        number_data = self.hardware_connection.get_nb_data_waiting()
+        print(f'N = {number_data}')
+        value = self.hardware_connection.read_data(number_data)
+        print(f'V = {value}')
+        # S_OK! to read !! or S_NK! if nb of samples too high !
+
+    def reset_open_loop_step(self):
+        data = 'R_!'
+        self.hardware_connection.send_data(data)
+
+
+    def get_open_loop_data_index(self, index, channel):
+        data = 'T_'+channel+'_' + str(index) + '_!'
+        self.hardware_connection.send_data(data)
+        while self.hardware_connection.is_data_waiting() is False:
+            pass
+        nb_data = self.hardware_connection.get_nb_data_waiting()
+        value = self.hardware_connection.read_data(nb_data)
+        print(value)
 
     def get_open_loop_data(self):
+        for k in range(self.samples):
+            self.get_open_loop_data_index(k, 'X')
+            self.get_open_loop_data_index(k, 'Y')
+            self.get_open_loop_data_index(k, 'S')
+
+        '''
+        // SENDING DATA
+            for(int i=0; i < N_SAMPLES; i++){
+                pc.printf("S_x_%d_%lf_!\r\n", i+1, samplesX[i]);
+                wait_ms(10);
+                pc.printf("S_y_%d_%lf_!\r\n", i+1, samplesY[i]);
+                wait_ms(10);
+                pc.printf("S_s_%d_%lf_!\r\n", i+1, samplesSTEP[i]);
+                wait_ms(10);
+            }
+            pc.printf("S_END_!\r\n");
+            g_trig = 2;
+            g_indice = 0;
+        '''
         pass
 
     def set_PID_params(self, Kx, Ky, Ix=0, Iy=0, Dx=0, Dy=0):

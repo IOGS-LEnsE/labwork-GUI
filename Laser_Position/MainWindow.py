@@ -61,6 +61,11 @@ class MainWindow(QMainWindow):
         self.nucleo_board = LaserPID()
         self.camera = None  # TO ADD for embedded USB camera - with opencv
         self.mode = 'O'
+        self.step_position = False
+        self.step_position_x_min = 0
+        self.step_position_x_max = 0
+        self.step_position_y_min = 0
+        self.step_position_y_max = 0
 
         # Define Window title
         self.setWindowTitle("Laser Position Control")
@@ -129,7 +134,7 @@ class MainWindow(QMainWindow):
             if x_phd_value is not None:
                 self.central_widget.set_position(x_phd_value, y_phd_value)
             self.central_widget.refresh_target()
-        elif self.mode == 'S':  # Scanner manual control
+        elif self.mode == 'S' or self.mode == 'E':  # Scanner manual control / central position
             scanner_x, scanner_y = self.central_widget.get_scanner_position()
             x_phd_value, y_phd_value = self.set_scanner_position(scanner_x, scanner_y)
             if x_phd_value is not None:
@@ -144,21 +149,23 @@ class MainWindow(QMainWindow):
             old_widget.deleteLater()
             self.main_layout.addWidget(new_widget, 0, 1)
 
+    def checked_action(self):
+        self.main_menu.update_menu('D')
+        print('checked')
+
     def update_mode(self, e):
         if self.nucleo_board is not None and e != 'C':
             self.nucleo_board.send_stop()
         if e == 'C':
-            print('COnnected')
             self.mode = 'C'
             self.main_timer.stop()
             self.main_menu.update_menu('C')
         elif e == 'P':  # photodiode
             self.mode = 'P'
-            self.main_timer.stop()
             self.central_widget = PhotodiodeWidget(self.camera)
-            self.central_widget.photodiode_signal.connect(self.update_photodiode)
             self.update_layout(self.central_widget)
             self.main_timer.setInterval(100)
+            self.main_timer.start()
         elif e == 'S':  # scanner
             self.mode = 'S'
             self.central_widget = ScannerWidget()
@@ -171,20 +178,13 @@ class MainWindow(QMainWindow):
             self.central_widget = TestPIDWidget()
             self.update_layout(self.central_widget)
         elif e == 'E': # central position
-            self.mode = 'C'
+            self.mode = 'E'
             self.main_timer.stop()
-            self.central_widget = CentralPositionWidget()
+            self.central_widget = CentralPositionWidget(parent=self, camera=self.camera)
+            self.central_widget.checked_limits.connect(self.checked_action)
             self.update_layout(self.central_widget)
-
-    def update_photodiode(self, e):
-        if e == 'P_Start':
             self.main_timer.setInterval(100)
             self.main_timer.start()
-            self.mode = 'P'
-        elif e == 'P_Stop':
-            self.nucleo_board.send_stop()
-            self.main_timer.stop()
-            self.mode = 'O'
 
 
 # -------------------------------
