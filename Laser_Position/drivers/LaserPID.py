@@ -51,13 +51,16 @@ class LaserPID:
         self.phd_y = 0
         self.sampling_freq = 10000
         self.samples = 100
+        # Scanner limits for step response
         self.x_limit_min = 0
         self.x_limit_max = 0
         self.y_limit_min = 0
         self.y_limit_max = 0
-        self.x_data = None
-        self.y_data = None
-        self.step_data = None
+        # Step Response
+        self.x_data = None      # Array of data for step response
+        self.y_data = None      # Array of data for step response
+        self.step_data = None   # Array of data for step response
+        self.step_acq = False   # Acquisition in process
 
     def set_serial_port(self, value):
         self.serial_port = value
@@ -72,6 +75,17 @@ class LaserPID:
 
     def is_connected(self):
         return self.connected
+
+    def is_data_waiting(self):
+        return self.hardware_connection.is_data_waiting()
+
+    def clear_buffer(self):
+        if self.is_data_waiting():
+            nb_data = self.hardware_connection.get_nb_data_waiting()
+            data = self.hardware_connection.read_data(nb_data)
+            print(f'ERASED DATA = {data}')
+        else:
+            print('Nothing to clear')
 
     def get_phd_xy(self):
         self.hardware_connection.send_data('A_!')
@@ -93,18 +107,24 @@ class LaserPID:
         self.scan_y = y
         data = 'M_' + str(x) + '_' + str(y) + '_!'
         self.hardware_connection.send_data(data)
-        while self.hardware_connection.is_data_waiting() is False:
-            pass
-        nb_data = self.hardware_connection.get_nb_data_waiting()
-        data = self.hardware_connection.read_data(nb_data).decode('ascii')
-        data_split = data.split('_')
-        if len(data_split) == 6:
-            self.phd_x = float(data_split[3])
-            self.phd_y = float(data_split[4])
+        timeout_value = 0
+        while timeout_value < 10 and self.hardware_connection.is_data_waiting() is False:
+            timeout_value += 1
+            time.sleep(0.01)
+        if timeout_value == 10:
+            print('TimeOut')
+            return None, None
         else:
-            self.phd_x = None
-            self.phd_y = None
-        return self.phd_x, self.phd_y
+            nb_data = self.hardware_connection.get_nb_data_waiting()
+            data = self.hardware_connection.read_data(nb_data).decode('ascii')
+            data_split = data.split('_')
+            if len(data_split) == 6:
+                self.phd_x = float(data_split[3])
+                self.phd_y = float(data_split[4])
+            else:
+                self.phd_x = None
+                self.phd_y = None
+            return self.phd_x, self.phd_y
 
     def get_scan_xy(self):
         return self.scan_x, self.scan_y
@@ -128,19 +148,42 @@ class LaserPID:
     def get_open_loop_samples(self):
         return self.samples
 
-    def start_open_loop_step(self):
+    def start_open_loop_step(self, fs, ns):
+        self.sampling_freq = fs
+        self.samples = ns
+        self.step_acq = True
         data = 'S_'+str(self.x_limit_min)+'_'+str(self.x_limit_max)+'_'
         data += str(self.y_limit_min)+'_'+str(self.y_limit_max)+'_'
-        data += str(self.sampling_freq)+'_!\r\n'
+        data += str(self.sampling_freq)+'_'+str(self.samples)+'_!\r\n'
         self.hardware_connection.send_data(data)
         # Acknowledgment waiting
-        while self.hardware_connection.is_data_waiting() is False:
-            pass
-        number_data = self.hardware_connection.get_nb_data_waiting()
-        print(f'N = {number_data}')
-        value = self.hardware_connection.read_data(number_data)
-        print(f'V = {value}')
-        # S_OK! to read !! or S_NK! if nb of samples too high !
+        timeout_value = 0
+        while timeout_value < 100 and self.hardware_connection.is_data_waiting() is False:
+            timeout_value += 1
+            time.sleep(0.01)
+        if timeout_value == 100:
+            print('TimeOut Step')
+        else:
+            data = self.hardware_connection.read_data(self.hardware_connection.get_nb_data_waiting())
+            data = data.decode('ascii')
+            if len(data) == 7:
+                if data == 'S_OK!\r\n':
+                    return True
+                elif data == 'S_NK!\r\n':
+                    return False
+                else:
+                    return False
+            else:
+                return False
+
+    def is_step_over(self):
+        if self.hardware_connection.is_data_waiting():
+            data = self.hardware_connection.read_data(self.hardware_connection.get_nb_data_waiting())
+            data = data.decode('ascii')
+            print(f'R_DATA = {data}')
+            return True
+        else:
+            return False
 
     def reset_open_loop_step(self):
         data = 'R_!'

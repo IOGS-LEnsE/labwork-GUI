@@ -235,6 +235,7 @@ int read_command()
             return 1;
         case 'S':
             mode = 'S';
+            out_led = 1;
             g_Kpx = 1;  g_Kpy = 1;
             g_Kix = 0;  g_Kiy = 0;
             g_Kdx = 0;  g_Kdy = 0;
@@ -252,6 +253,7 @@ int read_command()
             return 1;
         case 'T':  // Step data
             mode = 'T';
+            out_led = 0;
             sscanf(g_value, "T_%c_%d_!\r\n", &sChannel, &sIndex);
             sData = true;
             return 1;
@@ -300,6 +302,7 @@ int read_command()
 /* Fonction principale */
 int main()
 {
+    out_led = 0;
     valX = 0;
     signeX = 1;
     pc.baud(115200);
@@ -327,6 +330,9 @@ int main()
 
         if((mode == 'S') and (g_trig == 0)){
             tik_asst.detach();
+            out_led = 0;
+            pc.printf("S_OK_%d_!\r\n", g_samples);
+            g_trig = 2;
         }
         /*
 

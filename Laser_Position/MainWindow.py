@@ -36,6 +36,7 @@ from widgets.EmptyWidget import EmptyWidget
 from widgets.ScannerWidget import ScannerWidget
 from widgets.TestPIDWidget import TestPIDWidget
 from widgets.CentralPositionWidget import CentralPositionWidget
+from widgets.OpenLoopWidget import OpenLoopWidget
 from drivers.LaserPID import LaserPID
 
 
@@ -140,6 +141,11 @@ class MainWindow(QMainWindow):
             if x_phd_value is not None:
                 self.central_widget.set_position(x_phd_value, y_phd_value)
             self.central_widget.refresh_target()
+        elif self.mode == 'L':
+            print('LLL')
+            if self.nucleo_board.is_step_over():
+                self.main_timer.stop()
+                print('OK Step')
 
     def update_layout(self, new_widget):
         count = self.main_layout.count()
@@ -151,7 +157,24 @@ class MainWindow(QMainWindow):
 
     def checked_action(self):
         self.main_menu.update_menu('D')
-        print('checked')
+        self.main_timer.stop()
+        if self.nucleo_board.is_data_waiting():
+            self.nucleo_board.clear_buffer()
+        x1, x2, y1, y2 = self.central_widget.get_limits()
+        self.step_position_x_min = x1
+        self.step_position_x_max = x2
+        self.step_position_y_min = y1
+        self.step_position_y_max = y2
+        self.step_position = True
+
+    def open_loop_action(self, e):
+        if e == 'L_Start': # Start of step response acquisition
+            fs, ns = self.central_widget.get_fs_ns()
+            self.nucleo_board.clear_buffer()
+            if self.nucleo_board.start_open_loop_step(fs, ns):
+                self.main_menu.update_menu('M')
+                self.main_timer.setInterval(300)
+                self.main_timer.start()
 
     def update_mode(self, e):
         if self.nucleo_board is not None and e != 'C':
@@ -170,7 +193,7 @@ class MainWindow(QMainWindow):
             self.mode = 'S'
             self.central_widget = ScannerWidget()
             self.update_layout(self.central_widget)
-            self.main_timer.setInterval(200)
+            self.main_timer.setInterval(100)
             self.main_timer.start()
         elif e == 'T': # test PID
             self.mode = 'T'
@@ -183,8 +206,19 @@ class MainWindow(QMainWindow):
             self.central_widget = CentralPositionWidget(parent=self, camera=self.camera)
             self.central_widget.checked_limits.connect(self.checked_action)
             self.update_layout(self.central_widget)
+            if self.step_position:
+                self.central_widget.set_limits(self.step_position_x_min, self.step_position_x_max,
+                                               self.step_position_y_min, self.step_position_y_max)
             self.main_timer.setInterval(100)
             self.main_timer.start()
+        elif e == 'L': # Step response
+            self.mode = 'L'
+            self.main_timer.stop()
+            self.central_widget = OpenLoopWidget(self)
+            self.central_widget.step_response.connect(self.open_loop_action)
+            self.update_layout(self.central_widget)
+            self.main_timer.setInterval(200)
+            print('STEP')
 
 
 # -------------------------------

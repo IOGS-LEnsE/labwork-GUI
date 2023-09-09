@@ -80,6 +80,7 @@ class MainMenu(QWidget):
         self.menu_open_loop_button = QPushButton('Open Loop')
         self.menu_layout.addWidget(self.menu_open_loop_button)
         self.menu_open_loop_button.setEnabled(False)
+        self.menu_open_loop_button.clicked.connect(self.open_loop_action)
         self.menu_open_loop_button.setStyleSheet(not_style)    
         self.menu_layout.addStretch()        
 
@@ -114,6 +115,12 @@ class MainMenu(QWidget):
             self.mode = 'E'
             self.menu_signal.emit('E')
             self.update_menu('E')
+
+    def open_loop_action(self):
+        if self.mode != '0':
+            self.mode = 'L'
+            self.menu_signal.emit('L')
+            self.update_menu('L')
 
     def update_menu(self, e):
         if e == 'C': # connected
@@ -155,9 +162,23 @@ class MainMenu(QWidget):
             self.menu_central_position_button.setEnabled(False)
             self.menu_central_position_button.setStyleSheet(active_style)
             self.menu_scanner_button.setEnabled(False)
+            self.menu_open_loop_button.setEnabled(False)
+            self.menu_open_loop_button.setStyleSheet(not_style)
+            self.menu_PID_button.setEnabled(False)
+            self.menu_PID_button.setStyleSheet(not_style)
         elif e == 'D': # Central Position Validated
             self.menu_open_loop_button.setEnabled(True)
             self.menu_open_loop_button.setStyleSheet('')
+        elif e == 'L':  # Open Loop Step Response
+            self.menu_PID_button.setEnabled(True)
+            self.menu_PID_button.setStyleSheet('')
+            self.menu_open_loop_button.setEnabled(False)
+            self.menu_open_loop_button.setStyleSheet(active_style)
+            self.menu_central_position_button.setEnabled(True)
+            self.menu_central_position_button.setStyleSheet(valid_style)
+            self.menu_PID_test_button.setEnabled(False)
+        elif e == 'M': # Step in progress
+            self.menu_PID_test_button.setEnabled(False)
 
 
     def disconnected_board(self):

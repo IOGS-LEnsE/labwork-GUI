@@ -26,7 +26,7 @@ import sys
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QVBoxLayout
 from PyQt6.QtWidgets import QPushButton, QLabel
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal
 from SupOpNumTools.pyqt6.TargetWidget import TargetWidget
 
 # Global Constants
@@ -74,8 +74,10 @@ class PhotodiodeWidget(QWidget):
         self.display_widget = QWidget()
         self.display_layout = QVBoxLayout()
         self.x_display = QLabel('X = ')
+        self.x_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.display_layout.addWidget(self.x_display)
         self.y_display = QLabel('Y = ')
+        self.y_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.display_layout.addWidget(self.y_display)
         self.display_widget.setLayout(self.display_layout)
         self.layout.addWidget(self.display_widget, 1, 0)

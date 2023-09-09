@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Laser Position Control Interface
 
-Scanner manual control Widget
+Scanner manual control Widget for central positionning
 
 ---------------------------------------
 (c) 2023 - LEnsE - Institut d'Optique
@@ -83,6 +83,7 @@ class CentralPositionWidget(QWidget):
         self.control_layout = QGridLayout()
         self.control_widget.setLayout(self.control_layout)
         self.title_label = QLabel('Extrema Points for Open Loop Step Response')
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title_label.setStyleSheet(title_style)
         self.control_layout.addWidget(self.title_label, 0, 0, 1, 2)
 
@@ -115,6 +116,7 @@ class CentralPositionWidget(QWidget):
         self.control_layout.addWidget(self.y_limit_max_label, 4, 1)
 
         self.checked_label = QLabel('NOT VALID')
+        self.checked_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.checked_label.setStyleSheet('background:orange;')
         self.control_layout.addWidget(self.checked_label, 5, 0, 1, 2)
 
@@ -228,6 +230,29 @@ class CentralPositionWidget(QWidget):
 
     def get_limits(self):
         return self.x_limit_min, self.x_limit_max, self.y_limit_min, self.y_limit_max
+
+    def set_limits(self, x1, x2, y1, y2):
+        self.x_limit_min = x1
+        self.x_limit_min_set = True
+        self.x_limit_min_label.setText(str(x1))
+        self.x_limit_min_label.setStyleSheet('')
+        self.x_limit_min_label.setStyleSheet('font-weight:bold;')
+        self.x_limit_max = x2
+        self.x_limit_max_set = True
+        self.x_limit_max_label.setText(str(x2))
+        self.x_limit_max_label.setStyleSheet('')
+        self.x_limit_max_label.setStyleSheet('font-weight:bold;')
+        self.y_limit_min = y1
+        self.y_limit_min_set = True
+        self.y_limit_min_label.setText(str(y1))
+        self.y_limit_min_label.setStyleSheet('')
+        self.y_limit_min_label.setStyleSheet('font-weight:bold;')
+        self.y_limit_max = y2
+        self.y_limit_max_set = True
+        self.y_limit_max_label.setText(str(y2))
+        self.y_limit_max_label.setStyleSheet('')
+        self.y_limit_max_label.setStyleSheet('font-weight:bold;')
+        self.check_limits()
 
 # -------------------------------
 
