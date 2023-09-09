@@ -73,6 +73,11 @@ class LaserPID:
         self.connected = self.hardware_connection.connect()
         return self.connected
 
+    def disconnect_hardware(self):
+        self.hardware_connection.disconnect()
+        self.connected = False
+        return self.connected
+
     def is_connected(self):
         return self.connected
 
@@ -112,7 +117,7 @@ class LaserPID:
             timeout_value += 1
             time.sleep(0.01)
         if timeout_value == 10:
-            print('TimeOut')
+            print('TimeOut Scan')
             return None, None
         else:
             nb_data = self.hardware_connection.get_nb_data_waiting()
@@ -154,7 +159,7 @@ class LaserPID:
         self.step_acq = True
         data = 'S_'+str(self.x_limit_min)+'_'+str(self.x_limit_max)+'_'
         data += str(self.y_limit_min)+'_'+str(self.y_limit_max)+'_'
-        data += str(self.sampling_freq)+'_'+str(self.samples)+'_!\r\n'
+        data += str(self.sampling_freq)+'_'+str(self.samples)+'_!'
         self.hardware_connection.send_data(data)
         # Acknowledgment waiting
         timeout_value = 0
@@ -163,6 +168,7 @@ class LaserPID:
             time.sleep(0.01)
         if timeout_value == 100:
             print('TimeOut Step')
+            return False
         else:
             data = self.hardware_connection.read_data(self.hardware_connection.get_nb_data_waiting())
             data = data.decode('ascii')
@@ -170,17 +176,26 @@ class LaserPID:
                 if data == 'S_OK!\r\n':
                     return True
                 elif data == 'S_NK!\r\n':
+                    self.reset_open_loop_step()
                     return False
                 else:
+                    self.reset_open_loop_step()
                     return False
             else:
+                self.reset_open_loop_step()
                 return False
 
     def is_step_over(self):
-        if self.hardware_connection.is_data_waiting():
-            data = self.hardware_connection.read_data(self.hardware_connection.get_nb_data_waiting())
-            data = data.decode('ascii')
-            print(f'R_DATA = {data}')
+        self.hardware_connection.send_data('F_!')
+        time.sleep(0.1)
+        # Acknowledgment waiting
+        while self.hardware_connection.is_data_waiting() is False:
+            pass
+        time.sleep(0.2)
+        data = self.hardware_connection.read_data(self.hardware_connection.get_nb_data_waiting())
+        data = data.decode('ascii')
+        data = data.split('_')
+        if data[1] == '1':
             return True
         else:
             return False
@@ -189,37 +204,26 @@ class LaserPID:
         data = 'R_!'
         self.hardware_connection.send_data(data)
 
-
     def get_open_loop_data_index(self, index, channel):
         data = 'T_'+channel+'_' + str(index) + '_!'
         self.hardware_connection.send_data(data)
         while self.hardware_connection.is_data_waiting() is False:
             pass
+        time.sleep(0.005)
         nb_data = self.hardware_connection.get_nb_data_waiting()
-        value = self.hardware_connection.read_data(nb_data)
-        print(value)
+        value = self.hardware_connection.read_data(nb_data).decode('ascii')
+        value = value.split('_')
+        return value[3]
 
     def get_open_loop_data(self):
+        self.x_data = numpy.zeros(self.samples)
+        self.y_data = numpy.zeros(self.samples)
+        self.s_data = numpy.zeros(self.samples)
         for k in range(self.samples):
-            self.get_open_loop_data_index(k, 'X')
-            self.get_open_loop_data_index(k, 'Y')
-            self.get_open_loop_data_index(k, 'S')
-
-        '''
-        // SENDING DATA
-            for(int i=0; i < N_SAMPLES; i++){
-                pc.printf("S_x_%d_%lf_!\r\n", i+1, samplesX[i]);
-                wait_ms(10);
-                pc.printf("S_y_%d_%lf_!\r\n", i+1, samplesY[i]);
-                wait_ms(10);
-                pc.printf("S_s_%d_%lf_!\r\n", i+1, samplesSTEP[i]);
-                wait_ms(10);
-            }
-            pc.printf("S_END_!\r\n");
-            g_trig = 2;
-            g_indice = 0;
-        '''
-        pass
+            self.x_data[k] = self.get_open_loop_data_index(k, 'X')
+            self.y_data[k] = self.get_open_loop_data_index(k, 'Y')
+            self.s_data[k] = self.get_open_loop_data_index(k, 'S')
+        return self.x_data, self.y_data, self.s_data
 
     def set_PID_params(self, Kx, Ky, Ix=0, Iy=0, Dx=0, Dy=0):
         pass

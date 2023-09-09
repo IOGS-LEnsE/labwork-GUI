@@ -68,15 +68,18 @@ class PhotodiodeWidget(QWidget):
 
         # Title
         self.title_label = QLabel('Photodiode Response')
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title_label.setStyleSheet(title_style)
         self.layout.addWidget(self.title_label, 0, 0)
 
         self.display_widget = QWidget()
         self.display_layout = QVBoxLayout()
         self.x_display = QLabel('X = ')
+        self.x_display.setStyleSheet("font-size: 20px; color:blue;")
         self.x_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.display_layout.addWidget(self.x_display)
         self.y_display = QLabel('Y = ')
+        self.y_display.setStyleSheet("font-size: 20px; color:blue;")
         self.y_display.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.display_layout.addWidget(self.y_display)
         self.display_widget.setLayout(self.display_layout)

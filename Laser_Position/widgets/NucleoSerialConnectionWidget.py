@@ -53,6 +53,9 @@ class NucleoSerialConnectionWidget(QWidget):
         # Create List of available ports
         self.port_list = self.serial_link.get_serial_ports_list()
         self.port_combo = QComboBox(self)
+        font = self.port_combo.font()
+        font.setPointSize(18)
+        self.port_combo.setFont(font)
         self.ports = [p.device for p in self.port_list]
         if len(self.ports) == 0:
             self.port_combo.addItem('No Board :( ')
@@ -64,6 +67,9 @@ class NucleoSerialConnectionWidget(QWidget):
 
         # Connect button
         self.connect_button = QPushButton('Connect')
+        font = self.connect_button.font()
+        font.setPointSize(20)
+        self.connect_button.setFont(font)
         if len(self.ports) == 0:
             self.connect_button.setEnabled(False)
         else:
@@ -77,6 +83,9 @@ class NucleoSerialConnectionWidget(QWidget):
 
         # Refresh button
         self.refresh_button = QPushButton('Refresh List')
+        font = self.refresh_button.font()
+        font.setPointSize(14)
+        self.refresh_button.setFont(font)
         self.refresh_button.clicked.connect(self.refresh_list)
         self.layout.addWidget(self.refresh_button)
 

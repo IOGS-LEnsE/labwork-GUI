@@ -46,7 +46,7 @@ class IntroductionWidget(QWidget):
         self.layout = QVBoxLayout()
         # Title label
         self.title_label = QLabel('Laser Position Demonstration')
-        self.title_label.setStyleSheet("font-size: 16px; text-align: center; color:blue;")
+        self.title_label.setStyleSheet("font-size: 20px; text-align: center; color:blue;")
         self.layout.addWidget(self.title_label)
 
         # Connection combo list

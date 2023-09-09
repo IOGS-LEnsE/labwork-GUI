@@ -23,14 +23,14 @@ Use
 
 # Libraries to import
 import sys
+import numpy
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QVBoxLayout
 from PyQt6.QtWidgets import QPushButton, QLabel, QComboBox
 from PyQt6.QtGui import QColor
 from PyQt6.QtCore import pyqtSignal, Qt
 
-from SupOpNumTools.pyqt6.TargetWidget import TargetWidget
-from widgets.TargetSliderWidget import TargetSliderWidget
+from SupOpNumTools.pyqt6.XYChartWidget import XYChartWidget
 
 # Global Constants
 ACTIVE_COLOR = "#45B39D"
@@ -65,6 +65,9 @@ class OpenLoopWidget(QWidget):
 
         self.parent = parent
         self.data_ready = False
+        self.x_data = None
+        self.y_data = None
+        self.s_data = None
 
         self.layout = QGridLayout()
 
@@ -76,15 +79,15 @@ class OpenLoopWidget(QWidget):
         self.title_label.setStyleSheet(title_style)
         self.control_layout.addWidget(self.title_label, 0, 0, 1, 2)
 
-        self.samples_label = QLabel('Nombre Echantillons')
+        self.samples_label = QLabel('Number of samples')
         self.control_layout.addWidget(self.samples_label, 1, 1)
         self.samples_combo = QComboBox()
-        self.samples_values = ['100', '200', '500', '1000']
+        self.samples_values = ['100', '200', '500']
         self.samples_combo.addItems(self.samples_values)
         self.control_layout.addWidget(self.samples_label, 1, 0)
         self.control_layout.addWidget(self.samples_combo, 1, 1)
 
-        self.sampling_label = QLabel('Frequence Echantillonnage')
+        self.sampling_label = QLabel('Sampling Freq (Hz)')
         self.control_layout.addWidget(self.sampling_label, 1, 1)
         self.sampling_combo = QComboBox()
         self.sampling_values = ['10000', '5000', '1000', '500']
@@ -106,6 +109,13 @@ class OpenLoopWidget(QWidget):
         self.camera_widget.setStyleSheet('background-color:lightgray;')
         self.layout.addWidget(self.camera_widget, 0, 1)
 
+        # Graphe
+        self.graph_widget = XYChartWidget()
+        self.graph_widget.set_title('Step Response')
+        self.graph_widget.set_information('This is a test')
+        self.graph_widget.set_background('white')
+        self.layout.addWidget(self.graph_widget, 1, 0, 1, 2)
+
         self.layout.setColumnStretch(0, 1)
         self.layout.setColumnStretch(1, 1)
         self.layout.setRowStretch(0, 1)
@@ -114,6 +124,26 @@ class OpenLoopWidget(QWidget):
 
     def start_action(self):
         self.step_response.emit('L_Start')
+        self.data_ready_label.setText('IN PROGRESS')
+        self.data_ready_label.setStyleSheet('background:orange;color:white;')
+
+    def refresh_graph(self):
+        nuc_board = self.parent.get_nucleo_board()
+        self.x_data, self.y_data, self.s_data = nuc_board.get_open_loop_data()
+        print(f'SHAPE X_DATA = {self.x_data.shape}')
+        t_data = numpy.linspace(0, len(self.x_data)-1, len(self.x_data))
+        self.graph_widget.set_data(t_data, self.x_data)
+        self.graph_widget.enable_chart()
+        self.graph_widget.refresh_chart()
+
+    def set_data_ready(self, value):
+        self.data_ready = value
+        if value:
+            self.data_ready_label.setText('DATA OK')
+            self.data_ready_label.setStyleSheet(valid_style)
+        else:
+            self.data_ready_label.setText('NO DATA')
+            self.data_ready_label.setStyleSheet(not_style)
 
     def get_fs_ns(self):
         nb_samples = int(self.samples_combo.currentText())

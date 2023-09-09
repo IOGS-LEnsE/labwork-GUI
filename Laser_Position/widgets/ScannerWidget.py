@@ -74,6 +74,7 @@ class ScannerWidget(QWidget):
         self.control_layout = QVBoxLayout()
         self.control_widget.setLayout(self.control_layout)
         self.title_label = QLabel('Scanner Manual Control')
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title_label.setStyleSheet(title_style)
         self.control_layout.addWidget(self.title_label)
 

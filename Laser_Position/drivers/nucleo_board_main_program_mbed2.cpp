@@ -251,6 +251,15 @@ int read_command()
             g_trig = 1;
             g_indice = 0;
             return 1;
+        case 'F':
+            sscanf(g_value, "F_!\r\n");
+            if(g_trig == 1){
+                pc.printf("F_0_!\r\n");
+            }
+            else{
+                pc.printf("F_1_!\r\n");
+            }
+            return 1;
         case 'T':  // Step data
             mode = 'T';
             out_led = 0;
@@ -331,7 +340,6 @@ int main()
         if((mode == 'S') and (g_trig == 0)){
             tik_asst.detach();
             out_led = 0;
-            pc.printf("S_OK_%d_!\r\n", g_samples);
             g_trig = 2;
         }
         /*
@@ -364,6 +372,9 @@ int main()
                 }
                 if(mode == 'S'){
                     tik_asst.attach(&stepLoop, g_sampling_period);
+                }
+                if(mode == 'F'){
+
                 }
                 if(mode == 'T'){
                     if(sData == true){

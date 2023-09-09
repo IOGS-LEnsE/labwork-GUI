@@ -67,6 +67,7 @@ class MainWindow(QMainWindow):
         self.step_position_x_max = 0
         self.step_position_y_min = 0
         self.step_position_y_max = 0
+        # Step response
 
         # Define Window title
         self.setWindowTitle("Laser Position Control")
@@ -142,10 +143,10 @@ class MainWindow(QMainWindow):
                 self.central_widget.set_position(x_phd_value, y_phd_value)
             self.central_widget.refresh_target()
         elif self.mode == 'L':
-            print('LLL')
             if self.nucleo_board.is_step_over():
                 self.main_timer.stop()
-                print('OK Step')
+                self.central_widget.set_data_ready(True)
+                self.central_widget.refresh_graph()
 
     def update_layout(self, new_widget):
         count = self.main_layout.count()
