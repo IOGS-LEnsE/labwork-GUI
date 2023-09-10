@@ -87,6 +87,7 @@ class MainMenu(QWidget):
         self.menu_PID_button = QPushButton('PID Control')
         self.menu_layout.addWidget(self.menu_PID_button)
         self.menu_PID_button.setEnabled(False)
+        self.menu_PID_button.clicked.connect(self.control_action)
         self.menu_PID_button.setStyleSheet(not_style)
         self.menu_layout.addStretch()
         
@@ -121,6 +122,12 @@ class MainMenu(QWidget):
             self.mode = 'L'
             self.menu_signal.emit('L')
             self.update_menu('L')
+
+    def control_action(self):
+        if self.mode != '0':
+            self.mode = 'R'
+            self.menu_signal.emit('R')
+            self.update_menu('R')
 
     def update_menu(self, e):
         if e == 'C': # connected
@@ -179,6 +186,11 @@ class MainMenu(QWidget):
             self.menu_PID_test_button.setEnabled(False)
         elif e == 'M': # Step in progress
             self.menu_PID_test_button.setEnabled(False)
+        elif e == 'R':
+            self.menu_central_position_button.setEnabled(False)
+            self.menu_PID_button.setStyleSheet(active_style)
+            self.menu_open_loop_button.setEnabled(True)
+            self.menu_open_loop_button.setStyleSheet(valid_style)
 
 
     def disconnected_board(self):

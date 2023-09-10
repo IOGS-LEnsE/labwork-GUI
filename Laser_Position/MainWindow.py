@@ -147,6 +147,9 @@ class MainWindow(QMainWindow):
                 self.main_timer.stop()
                 self.central_widget.set_data_ready(True)
                 self.central_widget.refresh_graph()
+        elif self.mode == 'R':
+            # Check new values and transfer to PID hardware
+            print('Test')
 
     def update_layout(self, new_widget):
         count = self.main_layout.count()
@@ -219,7 +222,13 @@ class MainWindow(QMainWindow):
             self.central_widget.step_response.connect(self.open_loop_action)
             self.update_layout(self.central_widget)
             self.main_timer.setInterval(200)
-            print('STEP')
+        elif e == 'R': # PID control
+            self.mode = 'R'
+            self.main_timer.stop()
+            self.central_widget = EmptyWidget()
+            self.update_layout(self.central_widget)
+            self.main_timer.setInterval(200)
+            self.main_timer.start()
 
 
 # -------------------------------
