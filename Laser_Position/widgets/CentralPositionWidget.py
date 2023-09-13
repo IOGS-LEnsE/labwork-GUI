@@ -25,7 +25,7 @@ Use
 import sys
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QVBoxLayout
-from PyQt6.QtWidgets import QPushButton, QLabel, QSlider
+from PyQt6.QtWidgets import QPushButton, QLabel
 from PyQt6.QtGui import QColor
 from PyQt6.QtCore import pyqtSignal, Qt
 

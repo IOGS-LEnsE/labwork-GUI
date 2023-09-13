@@ -61,6 +61,13 @@ class LaserPID:
         self.y_data = None      # Array of data for step response
         self.step_data = None   # Array of data for step response
         self.step_acq = False   # Acquisition in process
+        # PID parameters
+        self.K_X = 0
+        self.K_Y = 0
+        self.I_X = 0
+        self.I_Y = 0
+        self.D_X = 0
+        self.D_Y = 0
 
     def set_serial_port(self, value):
         self.serial_port = value
@@ -225,8 +232,37 @@ class LaserPID:
             self.s_data[k] = self.get_open_loop_data_index(k, 'S')
         return self.x_data, self.y_data, self.s_data
 
-    def set_PID_params(self, Kx, Ky, Ix=0, Iy=0, Dx=0, Dy=0):
-        pass
+    def set_PID_params(self, Kx, Ky, Ix=0, Iy=0, Dx=0, Dy=0, sampling=10000):
+        changed = False
+        if sampling != self.sampling_freq:
+            changed = True
+            self.sampling_freq = sampling
+
+        if self.K_X != Kx:
+            changed = True
+            self.K_X = Kx
+        if self.K_Y != Ky:
+            changed = True
+            self.K_Y = Ky
+
+        if self.I_X != Ix:
+            changed = True
+            self.I_X = Ix
+        if self.I_Y != Iy:
+            changed = True
+            self.I_Y = Iy
+
+        if self.D_X != Dx:
+            changed = True
+            self.D_X = Dx
+        if self.D_Y != Dy:
+            changed = True
+            self.D_Y = Dy
+        if changed:
+            data = 'D_'+str(Kx)+'_'+str(Ky)+'_'+str(Ix)+'_'+str(Iy)
+            data += '_'+str(Dx)+'_'+str(Dy)+'_'+str(sampling)+'_!'
+            self.hardware_connection.send_data(data)
+        # Tets ACK ??
 
     def start_PID_control(self):
         pass

@@ -34,9 +34,9 @@ from widgets.IntroductionWidget import IntroductionWidget
 from widgets.PhotodiodeWidget import PhotodiodeWidget
 from widgets.EmptyWidget import EmptyWidget
 from widgets.ScannerWidget import ScannerWidget
-from widgets.TestPIDWidget import TestPIDWidget
 from widgets.CentralPositionWidget import CentralPositionWidget
 from widgets.OpenLoopWidget import OpenLoopWidget
+from widgets.PIDWidget import PIDWidget
 from drivers.LaserPID import LaserPID
 
 
@@ -149,7 +149,8 @@ class MainWindow(QMainWindow):
                 self.central_widget.refresh_graph()
         elif self.mode == 'R':
             # Check new values and transfer to PID hardware
-            print('Test')
+            k_x, k_y, i_x, i_y, d_x, d_Y, sampling = self.central_widget.get_PID_parameters()
+            self.nucleo_board.set_PID_params(k_x, k_y, i_x, i_y, d_x, d_Y, sampling)
 
     def update_layout(self, new_widget):
         count = self.main_layout.count()
@@ -199,11 +200,6 @@ class MainWindow(QMainWindow):
             self.update_layout(self.central_widget)
             self.main_timer.setInterval(100)
             self.main_timer.start()
-        elif e == 'T': # test PID
-            self.mode = 'T'
-            self.main_timer.stop()
-            self.central_widget = TestPIDWidget()
-            self.update_layout(self.central_widget)
         elif e == 'E': # central position
             self.mode = 'E'
             self.main_timer.stop()
@@ -225,7 +221,7 @@ class MainWindow(QMainWindow):
         elif e == 'R': # PID control
             self.mode = 'R'
             self.main_timer.stop()
-            self.central_widget = EmptyWidget()
+            self.central_widget = PIDWidget(self)
             self.update_layout(self.central_widget)
             self.main_timer.setInterval(200)
             self.main_timer.start()

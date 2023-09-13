@@ -63,12 +63,6 @@ class MainMenu(QWidget):
         self.menu_scanner_button.setEnabled(False)
         self.menu_scanner_button.clicked.connect(self.scanner_action)
         self.menu_scanner_button.setStyleSheet(not_style)
-
-        self.menu_PID_test_button = QPushButton('PID Test')
-        self.menu_layout.addWidget(self.menu_PID_test_button)
-        self.menu_PID_test_button.setEnabled(False)
-        self.menu_PID_test_button.clicked.connect(self.PID_test_action)
-        self.menu_PID_test_button.setStyleSheet(not_style)
         self.menu_layout.addStretch()
 
         self.menu_central_position_button = QPushButton('Central Position')
@@ -105,12 +99,6 @@ class MainMenu(QWidget):
             self.menu_signal.emit('S')
             self.update_menu('S')
 
-    def PID_test_action(self):
-        if self.mode != '0':
-            self.mode = 'T'
-            self.menu_signal.emit('T')
-            self.update_menu('T')
-
     def central_position_action(self):
         if self.mode != '0':
             self.mode = 'E'
@@ -141,31 +129,21 @@ class MainMenu(QWidget):
             self.menu_photodiode_button.setStyleSheet(active_style)
             self.menu_scanner_button.setEnabled(True)
             self.menu_scanner_button.setStyleSheet('')
-            self.menu_PID_test_button.setEnabled(False)
-            self.menu_PID_test_button.setStyleSheet(not_style)
+            self.menu_central_position_button.setEnabled(False)
+            self.menu_central_position_button.setStyleSheet(not_style)
         elif e == 'S': # Scanner
             self.menu_photodiode_button.setEnabled(True)
             self.menu_photodiode_button.setStyleSheet(valid_style)
             self.menu_scanner_button.setEnabled(False)
             self.menu_scanner_button.setStyleSheet(active_style)
-            self.menu_PID_test_button.setEnabled(True)
-            self.menu_PID_test_button.setStyleSheet('')
-            self.menu_central_position_button.setEnabled(False)
-            self.menu_central_position_button.setStyleSheet(not_style)
-        elif e == 'T': # PID Test
-            self.menu_scanner_button.setEnabled(True)
-            self.menu_scanner_button.setStyleSheet(valid_style)
-            self.menu_PID_test_button.setEnabled(False)
-            self.menu_PID_test_button.setStyleSheet(active_style)
             self.menu_central_position_button.setEnabled(True)
             self.menu_central_position_button.setStyleSheet('')
-            self.menu_photodiode_button.setEnabled(False)
             self.menu_open_loop_button.setEnabled(False)
             self.menu_open_loop_button.setStyleSheet(not_style)
 
         elif e == 'E': # Central position
-            self.menu_PID_test_button.setEnabled(True)
-            self.menu_PID_test_button.setStyleSheet(valid_style)
+            self.menu_scanner_button.setEnabled(True)
+            self.menu_scanner_button.setStyleSheet(valid_style)
             self.menu_central_position_button.setEnabled(False)
             self.menu_central_position_button.setStyleSheet(active_style)
             self.menu_scanner_button.setEnabled(False)
@@ -183,9 +161,9 @@ class MainMenu(QWidget):
             self.menu_open_loop_button.setStyleSheet(active_style)
             self.menu_central_position_button.setEnabled(True)
             self.menu_central_position_button.setStyleSheet(valid_style)
-            self.menu_PID_test_button.setEnabled(False)
+            self.menu_scanner_button.setEnabled(False)
         elif e == 'M': # Step in progress
-            self.menu_PID_test_button.setEnabled(False)
+            self.menu_scanner_button.setEnabled(False)
         elif e == 'R':
             self.menu_central_position_button.setEnabled(False)
             self.menu_PID_button.setStyleSheet(active_style)

@@ -327,7 +327,7 @@ int main()
     //Run the PID control loop every 1ms
     tik_asst.attach(&controlLoop, g_sampling_period);
 
-    pc.printf("im here !!\r\n");
+    //pc.printf("im here !!\r\n");
 
     while (true) {
 
@@ -366,7 +366,7 @@ int main()
             int comm_ok = read_command();//recognizing coefficients
             if(comm_ok){
                 if((mode == 'P') or (mode == 'I') or (mode == 'D')){
-                    pc.printf("%c_OK! gX = %lf gY = %lf Fe = %lf\r\n", mode, g_Kpx, g_Kpy, g_sampling_frequency);
+                    //pc.printf("%c_OK! gX = %lf gY = %lf Fe = %lf\r\n", mode, g_Kpx, g_Kpy, g_sampling_frequency);
                     updatePID();
                     tik_asst.attach(&controlLoop, g_sampling_period);
                 }

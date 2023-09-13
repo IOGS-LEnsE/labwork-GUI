@@ -31,9 +31,9 @@ from PyQt6.QtCore import QTimer, pyqtSignal, Qt
 from PyQt6.QtCore import Qt, pyqtSignal, QObject, QRect
 from pyqtgraph import PlotWidget, plot, mkPen
 
-styleH1 = "font-size:20px; padding:7px; color:Navy; border-top: 1px solid Navy;"
-styleH = "font-size:18px; padding:4px; color:Navy; font-weight:bold;"
-styleV = "font-size:14px; padding:2px; "
+styleH1 = "font-size:16px; padding:7px; color:Navy; border-top: 1px solid Navy;"
+styleH = "font-size:14px; padding:4px; color:Navy; font-weight:bold;"
+styleV = "font-size:12px; padding:2px; "
 
 
 class IncDecWidget(QWidget):
@@ -64,19 +64,23 @@ class IncDecWidget(QWidget):
         self.main_layout = QGridLayout()
         ''' Graphical Objects '''
         self.name = QLabel(name)
+        self.name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.user_value = QLineEdit()
+        self.user_value.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.user_value.returnPressed.connect(self.new_value_action)
         self.name.setStyleSheet(styleH)
         self.user_value.setStyleSheet(styleH)
 
         self.units = ''
         self.units_label = QLabel('')
+        self.units_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.inc_button = QPushButton('+ '+str(self.ratio_gain))
         self.inc_button.clicked.connect(self.increase_value)
-        self.inc_button.setStyleSheet("background:#F3A13C; color:white; font-size:16px; font-weight:bold;")
+        self.inc_button.setStyleSheet("background:#F3A13C; color:white; font-size:14px; font-weight:bold;")
         self.dec_button = QPushButton('- '+str(self.ratio_gain))
         self.dec_button.clicked.connect(self.decrease_value)
-        self.dec_button.setStyleSheet("background:#3EE4FD;font-size:16px; font-weight:bold;")
+        self.dec_button.setStyleSheet("background:#3EE4FD;font-size:14px; font-weight:bold;")
 
         self.gain_combo = QComboBox()
         self.gain_combo.addItems(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
@@ -88,18 +92,18 @@ class IncDecWidget(QWidget):
         self.set_zero_button.setStyleSheet("font-size:10px;")
 
         self.main_layout.setColumnStretch(0, 2) # Dec button
-        self.main_layout.setColumnStretch(1, 2) # Name
-        self.main_layout.setColumnStretch(2, 3) # Value
+        self.main_layout.setColumnStretch(1, 4) # Name
+        self.main_layout.setColumnStretch(2, 1) # Value
         self.main_layout.setColumnStretch(3, 2) # Units
 
         ''' Adding GO into the widget layout '''
         self.main_layout.addWidget(self.dec_button, 1, 0)
-        self.main_layout.addWidget(self.name, 0, 0)  # Position 1,0 / 3 cells
+        self.main_layout.addWidget(self.name, 0, 0, 1, 4)  # Position 1,0 / 3 cells
         self.main_layout.addWidget(self.user_value, 1, 1)  # Position 1,1 / 3 cells
         self.main_layout.addWidget(self.units_label, 1, 2)
         self.main_layout.addWidget(self.inc_button, 1, 3)
-        self.main_layout.addWidget(self.gain_combo, 0, 3)
-        self.main_layout.addWidget(self.set_zero_button, 0, 1, 1, 2)
+        self.main_layout.addWidget(self.gain_combo, 2, 3)
+        self.main_layout.addWidget(self.set_zero_button, 2, 1, 1, 2)
         self.setLayout(self.main_layout)
 
         ''' Events '''
@@ -123,6 +127,12 @@ class IncDecWidget(QWidget):
         self.real_value -= self.ratio_gain
         self.update_display()
         self.updated.emit('dec')
+
+    def new_value_action(self):
+        value = self.user_value.text()
+        if value.isnumeric():
+            self.real_value = float(value)
+            self.update_display()
 
     def get_name(self):
         return self.name
@@ -195,6 +205,7 @@ class IncDecWidget(QWidget):
         self.gain_combo.setCurrentIndex(3)
         self.gain_changed()
         self.update_display()
+        self.updated.emit('rst')
 
 
 # -----------------------------------------------------------------------------------------------
