@@ -117,6 +117,7 @@ class Main_Widget(QWidget):
         """
         # Initialisation of the FPS setting
         minFPS, maxFPS = self.cameraWidget.getFPSRange()
+        print(f'MIN FPS = {minFPS} / MAX FPS = {maxFPS}')
         self.sensorSettingsWidget.FPS.slider.setMinimum(minFPS)
         self.sensorSettingsWidget.FPS.slider.setMaximum(maxFPS)
         self.sensorSettingsWidget.FPS.slider.setValue(maxFPS)
@@ -128,21 +129,21 @@ class Main_Widget(QWidget):
             lambda: self.cameraWidget.camera.set_frame_rate(self.sensorSettingsWidget.FPS.getValue()))
         self.sensorSettingsWidget.FPS.setValue(self.sensorSettingsWidget.FPS.getValue())
 
-        # Initialisation of the exposure setting
-        ## REVOIR RANGE !! EXPOSURE TIME
+        # Initialisation of the exposure setting (in ms but given in us by Basler methods)
         self.sensorSettingsWidget.exposureTime.floatListToSelect = self.cameraWidget.generateExpositionRangeList(1000)
-        self.sensorSettingsWidget.exposureTime.slider.setRange(0,
-                                                               len(self.sensorSettingsWidget.exposureTime.floatListToSelect) - 1)
+
+        self.sensorSettingsWidget.exposureTime.slider.setRange(1, 1000)
+        self.sensorSettingsWidget.exposureTime.setValue(200)
 
         self.sensorSettingsWidget.exposureTime.slider.valueChanged.connect(
-            lambda: self.cameraWidget.camera.set_exposure(self.sensorSettingsWidget.exposureTime.value))
+            lambda: self.cameraWidget.camera.set_exposure(self.sensorSettingsWidget.exposureTime.value * 1000))
 
-        self.sensorSettingsWidget.exposureTime.setValue(self.sensorSettingsWidget.exposureTime.floatListToSelect[-1])
-        self.cameraWidget.camera.set_exposure(1000)
+        self.cameraWidget.camera.set_exposure(200*1000)
 
         # Initialisation of the BlackLevel setting
+        # TO ADAPT TO THE BITS SIZE OF THE CAMERA
         self.sensorSettingsWidget.blackLevel.slider.setMinimum(0)
-        self.sensorSettingsWidget.blackLevel.slider.setMaximum(4095)
+        self.sensorSettingsWidget.blackLevel.slider.setMaximum(255)
         self.sensorSettingsWidget.blackLevel.setValue(
             int(self.cameraWidget.camera.get_black_level()))  # camera's blacklevel
 
@@ -250,7 +251,7 @@ class Main_Widget(QWidget):
         if not self.hardwareConnectionWidget.piezo.isConnected():
             self.hardwareConnectionWidget.connection()
             if not self.hardwareConnectionWidget.piezo.isConnected():
-                return print("The Hardward for the Piezo is not connected : you must connect it first.")
+                return print("The HardWare for the Piezo is not connected : you must connect it first.")
 
         z_displacement, z_step = parameters['Z Displacement'], parameters['Z Step']
 
@@ -264,7 +265,7 @@ class Main_Widget(QWidget):
         zs_list = self.calculateZs(z_displacement, z_step)
 
         # Create a folder to save the scans
-        self.createScanFolder()
+        scan_dir = self.createScanFolder()
 
         for index, z in enumerate(zs_list):
             z_axis, fine_z = z
@@ -422,6 +423,7 @@ class Main_Widget(QWidget):
 
         self.scanFolderPath = f"{base_foldername}{scan_number}"
         os.makedirs(self.scanFolderPath)
+        return self.scanFolderPath
 
     def saveImage(self, patternNumber):
         """
@@ -438,7 +440,8 @@ class Main_Widget(QWidget):
         num_images = len(image_files)
 
         # Increment the image number by 1 relative to the total number of existing images
-        next_image_number = num_images + 1
+        if patternNumber == 1:
+            next_image_number = num_images + 1
 
         # Format the image file name
         image_filename = f"Snap_{next_image_number:02d}_{patternNumber}.tiff"
