@@ -143,7 +143,7 @@ class Main_Widget(QWidget):
         # Initialisation of the BlackLevel setting
         # TO ADAPT TO THE BITS SIZE OF THE CAMERA
         self.sensorSettingsWidget.blackLevel.slider.setMinimum(0)
-        self.sensorSettingsWidget.blackLevel.slider.setMaximum(255)
+        self.sensorSettingsWidget.blackLevel.slider.setMaximum(4095)
         self.sensorSettingsWidget.blackLevel.setValue(
             int(self.cameraWidget.camera.get_black_level()))  # camera's blacklevel
 
