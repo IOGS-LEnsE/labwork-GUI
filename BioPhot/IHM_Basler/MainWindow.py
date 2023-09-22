@@ -292,14 +292,14 @@ class Main_Widget(QWidget):
         self.timer.setInterval(5000)
         self.timer.timeout.connect(lambda: self.setProgressBarTo0())
         self.timer.start()
-		
-		# COPY parameters.txt to SCAN_XX/parameters.txt
-		if self.path is None:
+
+        # COPY parameters.txt to SCAN_XX/parameters.txt
+        if self.path is None:
             filename = "parameters.txt"
-			destination_name = scan_dir+'/'+"parameters.txt"
+            destination_name = scan_dir+'/'+"parameters.txt"
         else:
             filename = self.path + "/parameters.txt"
-			destination_name = self.path + scan_dir+'/'+"parameters.txt"
+            destination_name = self.path + scan_dir+'/'+"parameters.txt"
 		# os.system('copy '+filename+' '+destination_name)
 
     def saveParameters(self):
