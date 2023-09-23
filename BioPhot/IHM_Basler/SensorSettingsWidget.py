@@ -28,7 +28,7 @@ class Sensor_Settings_Widget(QWidget):
         layout = QVBoxLayout()
         
         # Creating and adding our settings
-        self.exposureTime = Setting_Widget_Float(settingLabel = " Exposure Time ")
+        self.exposureTime = Setting_Widget_Float(settingLabel = " Expo. Time (ms) ")
         self.FPS = Setting_Widget_Int(settingLabel = " FPS ")
         self.blackLevel = Setting_Widget_Int(settingLabel = " BlackLevel ")
 
@@ -165,7 +165,7 @@ class Setting_Widget_Float(QWidget):
     Args:
         QWidget (class): QWidget can be put in another widget and / or window.
     """
-    def __init__(self, settingLabel, floatListToSelect = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]):
+    def __init__(self, settingLabel, rangeMax=1000):
         """
         Initialiszation of the widget.
 
@@ -174,7 +174,7 @@ class Setting_Widget_Float(QWidget):
             floatListToSelect (list): list that will be described by the slider.
         """
         super().__init__()
-        self.floatListToSelect = floatListToSelect
+        self.rangeMax = rangeMax
         self.selectionLabel = settingLabel
         self.value = 0.01
         self.initUI()
@@ -199,7 +199,7 @@ class Setting_Widget_Float(QWidget):
 
         # Create a slider widget and place it into the grid layout
         self.slider = QSlider(Qt.Horizontal)
-        self.slider.setRange(0, len(self.floatListToSelect) - 1)
+        self.slider.setRange(0, self.rangeMax)
         self.slider.valueChanged.connect(self.sliderValueChanged)
 
         layout.addWidget(self.slider, 0, 2, 1, 4) # row = 0, column = 2, rowSpan = 1, columnSpan = 4
@@ -213,7 +213,7 @@ class Setting_Widget_Float(QWidget):
         Args:
             value (float): useful value of the slider.
         """
-        self.value = self.floatListToSelect[value]
+        self.value = value
         self.labelValue.setText(self.selectionLabel + "= "+ str(math.floor(self.value * 100) / 100))
 
     def linetextValueChanged(self, text):
@@ -237,7 +237,24 @@ class Setting_Widget_Float(QWidget):
         Args:
             value (float): near value that will be put.
         """
-        self.slider.setValue(np.argmin(np.abs(self.floatListToSelect - value)))
+        self.slider.setValue(value)
+
+    def set_range_max(self, value):
+        """
+
+        Args:
+            value: int
+
+        Returns:
+
+        """
+        self.rangeMax = int(value)
+        self.slider.setRange(0, self.rangeMax)
+        if self.value > self.rangeMax:
+            self.value = self.rangeMax
+            self.labelValue.setText(self.selectionLabel + "= " + str(math.floor(self.value * 100) / 100))
+
+
 
 #-------------------------------------------------------------------------------------------------------
 
