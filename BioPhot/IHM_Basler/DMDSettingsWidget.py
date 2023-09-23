@@ -122,8 +122,8 @@ class DMD_Settings_Widget(QWidget):
         self.DMDHardware.reset()
 
     def launchSequence(self, pattern):
-        if self.DMDHardware == None :
-            self.DMDHardware=libDMD.dmd()
+        if self.DMDHardware is None:
+            self.DMDHardware = libDMD.dmd()
 
         self.DMDHardware.stopsequence()
 
