@@ -34,7 +34,7 @@ class Sensor_Settings_Widget(QWidget):
 
         layout.addWidget(self.exposureTime)
         layout.addWidget(self.FPS)
-        layout.addWidget(self.blackLevel)
+        # layout.addWidget(self.blackLevel)
 
         group_box.setLayout(layout)
 
@@ -90,22 +90,24 @@ class Setting_Widget_Int(QWidget):
         self.slider.setValue(initialisationValue)
         self.selectionLabel = settingLabel
 
-        layout = QGridLayout()
+        self.layout = QGridLayout()
 
         # Create a line widget and place it into the grid layout
+        '''
         self.line = QLineEdit(self)
         self.line.setStyleSheet("background-color: white; padding: 4px; color: black; border-style: solid; border-width: 1px;")
         layout.addWidget(self.line, 0, 6, 1, 2) # row = 0, column = 6, rowSpan = 1, columnSpan = 2
         self.line.textChanged.connect(self.linetextValueChanged)
+        '''
         self.slider.valueChanged.connect(self.sliderValueChanged)
 
         # Create a label widget and place it into the grid layout
         self.labelValue = QLabel(self.selectionLabel +"= " + str(initialisationValue))
-        layout.addWidget(self.labelValue, 0, 0, 1, 2) # row = 0, column = 1, rowSpan = 1, columnSpan = 2
+        self.layout.addWidget(self.labelValue, 0, 0, 1, 2) # row = 0, column = 1, rowSpan = 1, columnSpan = 2
 
-        layout.addWidget(self.slider, 0, 2, 1, 4) # row = 0, column = 2, rowSpan = 1, columnSpan = 4
+        self.layout.addWidget(self.slider, 0, 2, 1, 4) # row = 0, column = 2, rowSpan = 1, columnSpan = 4
 
-        self.setLayout(layout)
+        self.setLayout(self.layout)
 
     def linetextValueChanged(self, text):
         """
@@ -177,6 +179,10 @@ class Setting_Widget_Float(QWidget):
         self.rangeMax = rangeMax
         self.selectionLabel = settingLabel
         self.value = 0.01
+        self.layout = QGridLayout()
+        # self.line = QLineEdit(self)
+        self.labelValue = QLabel(settingLabel)
+        self.slider = QSlider(Qt.Horizontal)
         self.initUI()
 
     def initUI(self):
@@ -185,26 +191,21 @@ class Setting_Widget_Float(QWidget):
         """
         self.setStyleSheet("border-style: none")
 
-        layout = QGridLayout()
-
         # Create a line widget and place it into the grid layout
-        self.line = QLineEdit(self)
+        '''
         self.line.setStyleSheet("background-color: white; padding: 4px; color: black; border-style: solid; border-width: 1px;")
-        layout.addWidget(self.line, 0, 6, 1, 2) # row = 0, column = 6, rowSpan = 1, columnSpan = 2
+        self.layout.addWidget(self.line, 0, 6, 1, 2) # row = 0, column = 6, rowSpan = 1, columnSpan = 2
         self.line.textChanged.connect(self.linetextValueChanged)
+        '''
+        # Set up a label widget and place it into the grid layout
+        self.layout.addWidget(self.labelValue, 0, 0, 1, 2) # row = 0, column = 1, rowSpan = 1, columnSpan = 2
 
-        # Create a label widget and place it into the grid layout
-        self.labelValue = QLabel()
-        layout.addWidget(self.labelValue, 0, 0, 1, 2) # row = 0, column = 1, rowSpan = 1, columnSpan = 2
-
-        # Create a slider widget and place it into the grid layout
-        self.slider = QSlider(Qt.Horizontal)
+        # Set up a slider widget and place it into the grid layout
         self.slider.setRange(0, self.rangeMax)
         self.slider.valueChanged.connect(self.sliderValueChanged)
-
-        layout.addWidget(self.slider, 0, 2, 1, 4) # row = 0, column = 2, rowSpan = 1, columnSpan = 4
+        self.layout.addWidget(self.slider, 0, 2, 1, 4) # row = 0, column = 2, rowSpan = 1, columnSpan = 4
         
-        self.setLayout(layout)
+        self.setLayout(self.layout)
 
     def sliderValueChanged(self, value):
         """
