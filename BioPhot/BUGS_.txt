@@ -1,0 +1,12 @@
+TO MODIFY !
+-----------
+
+- Expo Time Value / voir pour valeur
+- FPS a init à 10 (si possible)
+- Répertoire des patterns par défaut à changer !!! Pattern Choice
+
+- si pas d'image chargée, bug lors du LOAD
+
+- Blacklevel 
+-- Enlever dans un premier temsp
+-- A rajouter plus tard
