@@ -35,10 +35,12 @@ def bitstobytes(a):
 
 class dmd():
     def __init__(self):
+        '''
         self.dev = usb.core.find(idVendor=0x0451, idProduct=0xc900)
 
         self.dev.set_configuration()
-
+        '''
+        self.dev = None
         self.ans = []
 
     ## standard usb command function
@@ -265,7 +267,7 @@ class dmd():
 
     def defsequence(self, images, exp, ti, dt, to, rep):
 
-        self.stopsequence()
+        # self.stopsequence()
 
         arr = []
 
@@ -297,7 +299,7 @@ class dmd():
             else:
                 for j in range(i * 24, num):
                     self.definepattern(j, exp[j], 1, '111', ti[j], dt[j], to[j], i, j - i * 24)
-
+        '''
         self.configurelut(num, rep)
 
         for i in range((num - 1) // 24 + 1):
@@ -305,3 +307,24 @@ class dmd():
 
             print('Uploading ... --------------------------------------| 3/3')
             self.bmpload(encodedimages[(num - 1) // 24 - i], sizes[(num - 1) // 24 - i])
+        '''
+
+
+if __name__ == '__main__':
+    path1 = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_0_quarts.bmp"
+    path2 = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_1_quarts.bmp"
+    path3 = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_2_quarts.bmp"
+
+    patterns = [path1, path2, path3]
+
+    print(f'P1 = {path1}')
+
+    exposure = [10000]
+    dark_time = [0]
+    trigger_in = [False]
+    trigger_out = [1]
+
+    dmd_ = dmd()
+
+    dmd_.defsequence(patterns, exposure, trigger_in, dark_time, trigger_out, 0)
+
