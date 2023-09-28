@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QLabel, QWidget, QApplication, QGroupBox, QGridLayou
 from PyQt5.QtGui import QPixmap, QIcon
 import sys
 from PatternChoiceWindowWidget import Pattern_Choice_Window
-import libDMD
+import pycrafter6500
 import numpy
 import PIL.Image
 
@@ -38,21 +38,15 @@ class DMD_Settings_Widget(QWidget):
         self.patternChoiceWindowWidget2 = Pattern_Choice_Window(2)
         self.patternChoiceWindowWidget3 = Pattern_Choice_Window(3)
 
-        self.patternChoiceWindowWidget1.path = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_0_quarts.bmp"
-        self.patternChoiceWindowWidget2.path = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_1_quarts.bmp"
-        self.patternChoiceWindowWidget3.path = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_2_quarts.bmp"
+        self.patternChoiceWindowWidget1.path = r"..\MiresDMD\mire_256\Mire256_pix_decalee_0_quarts.bmp"
+        self.patternChoiceWindowWidget2.path = r"..\MiresDMD\mire_256\Mire32_pix_decalee_0_quarts.bmp"
+        self.patternChoiceWindowWidget3.path = r"..\MiresDMD\mire_256\FTM.bmp"
 
         # Creating and adding our widgets to the mainlayout
         layout = QGridLayout()
 
         self.resetPushButton = QPushButton("Reset")
         self.resetPushButton.clicked.connect(lambda: self.resetPatternsLoaded())
-
-        self.viewTestPushButton = QPushButton("View Test")
-        self.viewTestPushButton.clicked.connect(lambda: self.ApercuPushButton())
-
-        self.testPushButton = QPushButton("TEST")
-        self.testPushButton.clicked.connect(lambda: self.TestPushButton())
 
         self.patternChoiceLoad1 = Pattern_Choice_Load_Widget(1)
         self.patternChoiceLoad1.patternChoicePushButton.clicked.connect(lambda: self.patternChoiceWindowWidget1.show())
@@ -79,8 +73,6 @@ class DMD_Settings_Widget(QWidget):
                 self.getSmallText(self.patternChoiceWindowWidget3.path)))
 
         layout.addWidget(self.resetPushButton, 0, 0, 1, 1)  # row = 0, column = 0, rowSpan = 1, columnSpan = 1
-        layout.addWidget(self.viewTestPushButton, 0, 2, 1, 1)  # row = 0, column = 2, rowSpan = 1, columnSpan = 1
-        layout.addWidget(self.testPushButton, 0, 3, 1, 1)  # row = 0, column = 3, rowSpan = 1, columnSpan = 1
         layout.addWidget(self.patternChoiceLoad1, 1, 0, 1, 4)  # row = 1, column = 0, rowSpan = 1, columnSpan = 4
         layout.addWidget(self.patternChoiceLoad2, 2, 0, 1, 4)  # row = 2, column = 0, rowSpan = 1, columnSpan = 4
         layout.addWidget(self.patternChoiceLoad3, 3, 0, 1, 4)  # row = 3, column = 0, rowSpan = 1, columnSpan = 4
@@ -120,47 +112,54 @@ class DMD_Settings_Widget(QWidget):
         Method used to reset the DMD.
         """
         if self.DMDHardware == None:
-            self.DMDHardware = libDMD.dmd()
+            self.DMDHardware = pycrafter6500.dmd()
 
         self.DMDHardware.reset()
 
     def launchSequence(self, pattern):
         print("\n")
         if self.DMDHardware is None:
-            self.DMDHardware = libDMD.dmd()
+            self.DMDHardware = pycrafter6500.dmd()
 
-        '''
+        images = []
+
+        for path in pattern:
+            images.append((numpy.asarray(PIL.Image.open(path)) // 129))
+        
+        number_of_images = len(images)
+        
         self.DMDHardware.stopsequence()
 
         self.DMDHardware.changemode(3)
 
-        exposure=[1000000]
-        dark_time=[0]
-        trigger_in=[False]
-        trigger_out=[1]
-        
-        self.DMDHardware.defsequence([pattern], exposure, trigger_in, dark_time, trigger_out, 0)
+        exposure = [1000000] * number_of_images
+        dark_time = [0] * number_of_images
+        trigger_in = [False] * number_of_images
+        trigger_out = [1] * number_of_images
+
+        """
+        images: python list of numpy arrays, with size (1080,1920), dtype uint8, and filled with binary values (1 and 0 only)
+        exposures: python list or numpy array with the exposure times in microseconds of each image. 
+            Length must be equal to the images list.
+        trigger in: python list or numpy array of boolean values determing wheter to wait for an external trigger before exposure. 
+            Length must be equal to the images list.
+        dark time: python list or numpy array with the dark times in microseconds after each image. 
+            Length must be equal to the images list.
+        trigger out: python list or numpy array of boolean values determing wheter to emit an external trigger after exposure. 
+            Length must be equal to the images list.
+        repetitions: number of repetitions of the sequence. set to 0 for infinite loop.
+        """
+
+        self.DMDHardware.defsequence(images, exposure, trigger_in, dark_time, trigger_out, 0)
 
         self.DMDHardware.startsequence()
-        '''
-
-    def TestPushButton(self):
-        """
-        Method used when the Test push button is clicked.
-        """
-        image = (numpy.asarray(PIL.Image.open(
-            self.patternChoiceWindowWidget1.path)))
-
-        self.launchSequence(image)
 
     def PatternLoad1(self):
         """
         Method used when the Pattern Load 1 push button is clicked.
         """
         if self.patternChoiceWindowWidget1.path != None:
-            self.patternsLoaded[0] = numpy.asarray(PIL.Image.open(self.patternChoiceWindowWidget1.path))
-
-            self.launchSequence(self.patternsLoaded[0])
+            self.launchSequence([self.patternChoiceWindowWidget1.path])
 
             print(f"{self.getSmallText(self.patternChoiceWindowWidget1.path)} : loaded.\n")
 
@@ -169,9 +168,7 @@ class DMD_Settings_Widget(QWidget):
         Method used when the Pattern Load 2 push button is clicked.
         """
         if self.patternChoiceWindowWidget2.path != None:
-            self.patternsLoaded[1] = numpy.asarray(PIL.Image.open(self.patternChoiceWindowWidget2.path))
-
-            self.launchSequence(self.patternsLoaded[1])
+            self.launchSequence([self.patternChoiceWindowWidget2.path])
 
             print(f"{self.getSmallText(self.patternChoiceWindowWidget2.path)} : loaded.\n")
 
@@ -180,32 +177,28 @@ class DMD_Settings_Widget(QWidget):
         Method used when the Pattern Load 3 push button is clicked.
         """
         if self.patternChoiceWindowWidget3.path != None:
-            self.patternsLoaded[2] = numpy.asarray(PIL.Image.open(self.patternChoiceWindowWidget3.path))
-
-            self.launchSequence(self.patternsLoaded[2])
+            self.launchSequence([self.patternChoiceWindowWidget3.path])
 
             print(f"{self.getSmallText(self.patternChoiceWindowWidget3.path)} : loaded.\n")
 
-    def PatternLoad(self, patternPath):
+    def PatternLoad(self, pattern_path):
         """
         Method used to load a pattern by is path.
 
         Args:
             patternPath (str): path of the pattern.
         """
-        pattern = numpy.asarray(PIL.Image.open(patternPath))
+        self.launchSequence([pattern_path])
 
-        self.launchSequence(pattern)
-
-        print(f"{self.getSmallText(patternPath)} : loaded.\n")
+        print(f"{self.getSmallText(pattern_path)} : loaded.\n")
 
     def resetPatternsLoaded(self):
         """
         Method used to reset the pattern selections.
         """
-        self.patternChoiceWindowWidget1.path = r"MiresDMD\mires\mire 256\Mire256_pix_decalee_0_quarts.bmp"
-        self.patternChoiceWindowWidget2.path = r"MiresDMD\mires\mire 256\Mire256_pix_decalee_1_quarts.bmp"
-        self.patternChoiceWindowWidget3.path = r"MiresDMD\mires\mire 256\Mire256_pix_decalee_2_quarts.bmp"
+        self.patternChoiceWindowWidget1.path = r"..\MiresDMD\mire_256\Mire256_pix_decalee_0_quarts.bmp"
+        self.patternChoiceWindowWidget2.path = r"..\MiresDMD\mire_256\Mire32_pix_decalee_0_quarts.bmp"
+        self.patternChoiceWindowWidget3.path = r"..\MiresDMD\mire_256\FTM.bmp"
         self.patternsLoaded = [[], [], []]
 
         self.patternChoiceLoad1.patternChoicePushButton.setText("Pattern Choice")
@@ -225,8 +218,6 @@ class DMD_Settings_Widget(QWidget):
                                "border-color: black; padding: 6px; font: bold 12px; color: white;"
                                "text-align: center; border-style: solid;")
             self.resetPushButton.setStyleSheet("background: #ff8d3f; color: black; border-width: 1px;")
-            self.viewTestPushButton.setStyleSheet("background: #ff8d3f; color: black; border-width: 1px;")
-            self.testPushButton.setStyleSheet("background: #ff8d3f; color: black; border-width: 1px;")
             self.patternChoiceLoad1.setEnabled(True)
             self.patternChoiceLoad2.setEnabled(True)
             self.patternChoiceLoad3.setEnabled(True)
@@ -236,8 +227,6 @@ class DMD_Settings_Widget(QWidget):
                                "border-color: black; padding: 6px; font: bold 12px; color: white;"
                                "text-align: center; border-style: solid;")
             self.resetPushButton.setStyleSheet("background: white; color: black; border-width: 1px;")
-            self.viewTestPushButton.setStyleSheet("background: white; color: black; border-width: 1px;")
-            self.testPushButton.setStyleSheet("background: white; color: black; border-width: 1px;")
             self.patternChoiceLoad1.setEnabled(False)
             self.patternChoiceLoad2.setEnabled(False)
             self.patternChoiceLoad3.setEnabled(False)

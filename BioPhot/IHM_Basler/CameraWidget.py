@@ -98,7 +98,6 @@ class Camera_Widget(QWidget):
         """
         Method used to refresh the graph for the image display.
         """
-        print('OK')
         self.cameraRawArray = self.camera.get_image()
 
         AOIX, AOIY, AOIWidth, AOIHeight = self.camera.get_aoi()

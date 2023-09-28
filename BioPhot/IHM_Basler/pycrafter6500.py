@@ -83,7 +83,7 @@ class dmd():
     def __init__(self):
         self.dev=usb.core.find(idVendor=0x0451 ,idProduct=0xc900 )
 
-        # self.dev.set_configuration()
+        self.dev.set_configuration()
 
         self.ans=[]
 
@@ -373,40 +373,18 @@ class dmd():
 
 
 
-
-if __name__ == '__main__':
-    import numpy
-    import PIL.Image
-    path1 = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_0_quarts.bmp"
-
+def launch_seq(path, dlp):
     images = []
 
-    images.append((numpy.asarray(PIL.Image.open(path1)) // 129))
-
-    dlp = dmd()
-
-    # dlp.stopsequence()
-
-    # dlp.changemode(3)
-
-    exposure = [1000000] * 30
-    dark_time = [0] * 30
-    trigger_in = [False] * 30
-    trigger_out = [1] * 30
-
-    dlp.defsequence(images, exposure, trigger_in, dark_time, trigger_out, 0)
-
-    # dlp.startsequence()
+    images.append((numpy.asarray(PIL.Image.open(path)) // 129))
 	
     number_of_images = len(images)
-
-    dlp = dmd()
-
+    
     dlp.stopsequence()
 
     dlp.changemode(3)
 
-    exposure = [1000000] * number_of_images
+    exposure = [1000] * number_of_images
     dark_time = [0] * number_of_images
     trigger_in = [False] * number_of_images
     trigger_out = [1] * number_of_images
@@ -424,6 +402,25 @@ if __name__ == '__main__':
     repetitions: number of repetitions of the sequence. set to 0 for infinite loop.
     """
 
-    dlp.defsequence(images, exposure, trigger_in, dark_time, trigger_out, 1)
+    dlp.defsequence(images, exposure, trigger_in, dark_time, trigger_out, 0)
 
     dlp.startsequence()
+
+
+if __name__ == '__main__':
+    import numpy
+    import PIL.Image
+    import time
+    
+
+    dlp = dmd()
+
+    
+    path1 = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_0_quarts.bmp"
+    path2 = r"..\MiresDMD\mire_256\Mire_New.bmp"
+    
+    dlp.stopsequence()
+
+    launch_seq(path1, dlp)
+    #time.sleep(2)
+    launch_seq(path2, dlp)

@@ -1,0 +1,6 @@
+TO MODIFY !
+-----------
+
+- Differencier Rep images / Rep Mires + Rep Mires par défaut
+- Sauvegarde image avec Date+Heure
+- Revoir Gestion des paramètres automatiques

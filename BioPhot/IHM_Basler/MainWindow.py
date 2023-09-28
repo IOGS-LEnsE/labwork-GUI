@@ -5,6 +5,7 @@ import glob
 from PIL import Image
 import numpy as np
 import cv2
+import time
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QFileDialog, QPushButton
 from PyQt5.QtCore import QTimer
@@ -87,8 +88,10 @@ class Main_Widget(QWidget):
             lambda: self.launchScan())
 
         # Setting a reset DMD button
+        '''
         self.resetDMDPushButton = QPushButton("Reset DMD")
         self.resetDMDPushButton.clicked.connect(lambda: self.DMDSettingsWidget.resetDMD())
+        '''
 
         # Setting the utilisation mode of the application and launching the next updates
         self.setMode()
@@ -166,7 +169,7 @@ class Main_Widget(QWidget):
             self.DMDSettingsWidget.patternChoiceWindowWidget1.setEnabled(True)
             self.DMDSettingsWidget.patternChoiceWindowWidget2.setEnabled(True)
             self.DMDSettingsWidget.patternChoiceWindowWidget3.setEnabled(True)
-            self.resetDMDPushButton.setStyleSheet("background: #ff8d3f; color: black; border-width: 1px;")
+            # self.resetDMDPushButton.setStyleSheet("background: #ff8d3f; color: black; border-width: 1px;")
 
         elif self.mode == "Automatic":
             self.sensorSettingsWidget.setEnabled(False)
@@ -180,7 +183,7 @@ class Main_Widget(QWidget):
             self.DMDSettingsWidget.patternChoiceWindowWidget1.setEnabled(False)
             self.DMDSettingsWidget.patternChoiceWindowWidget2.setEnabled(False)
             self.DMDSettingsWidget.patternChoiceWindowWidget3.setEnabled(False)
-            self.resetDMDPushButton.setStyleSheet("background: #7fadff; color: black; border-width: 1px;")
+            # self.resetDMDPushButton.setStyleSheet("background: #7fadff; color: black; border-width: 1px;")
 
     def changeMode(self):
         """
@@ -257,9 +260,10 @@ class Main_Widget(QWidget):
 
         # Set the camera with the values of the parameter file
         Exposure, FPS, BlackLevel = parameters['Exposure time'], parameters['FPS'], parameters['BlackLevel']
-        self.sensorSettingsWidget.exposureTime.setValue(Exposure)
+        print(f'Expo Time = {Exposure}')
+        # self.sensorSettingsWidget.exposureTime.setValue(Exposure)
         self.sensorSettingsWidget.FPS.setValue(FPS)
-        self.sensorSettingsWidget.blackLevel.setValue(BlackLevel)
+        #·self.sensorSettingsWidget.blackLevel.setValue(BlackLevel)
 
         # Take the list of the Zs
         zs_list = self.calculateZs(z_displacement, z_step)
@@ -268,6 +272,7 @@ class Main_Widget(QWidget):
         scan_dir = self.createScanFolder()
 
         for index, z in enumerate(zs_list):
+            print(f'Index = {index}')
             z_axis, fine_z = z
             self.hardwareConnectionWidget.piezo.movePosition(
                 z_axis, fine_z
@@ -280,9 +285,13 @@ class Main_Widget(QWidget):
             for pattern in parameters['Patterns']:
                 pattern_number = pattern['Pattern Number']
                 pattern_path = pattern['Pattern Path']
+                
+                print(f'Patern PATH = {pattern_path}')
+                
                 self.DMDSettingsWidget.PatternLoad(pattern_path)
+                time.sleep(1)
                 self.cameraWidget.refreshGraph()
-                self.saveImage(pattern_number)
+                self.saveImage(pattern_number, index)
 
             # Set up the prograssion bar
             progression = 100 * (index + 1) // len(zs_list)
@@ -434,7 +443,7 @@ class Main_Widget(QWidget):
         os.makedirs(self.scanFolderPath)
         return self.scanFolderPath
 
-    def saveImage(self, patternNumber):
+    def saveImage(self, pattern_number, index):
         """
         Method used to save an array in .tiff in a folder with an incrementing filename.
 
@@ -448,12 +457,8 @@ class Main_Widget(QWidget):
         image_files = glob.glob(os.path.join(self.scanFolderPath, beginning_filename))
         num_images = len(image_files)
 
-        # Increment the image number by 1 relative to the total number of existing images
-        if patternNumber == 1:
-            next_image_number = num_images + 1
-
         # Format the image file name
-        image_filename = f"Snap_{next_image_number:02d}_{patternNumber}.tiff"
+        image_filename = f"Snap_{index:02d}_{pattern_number}.tiff"
 
         # Create a PIL Image object from the array
         image_array = self.cameraWidget.get_frame()
@@ -582,7 +587,7 @@ class Main_Window(QMainWindow):
         # Adding Widgets to the Toolbar
         self.toolbar.addWidget(self.mainWidget.modeWidget)
         self.toolbar.addWidget(self.mainWidget.saveWidget)
-        self.toolbar.addWidget(self.mainWidget.resetDMDPushButton)
+        # self.toolbar.addWidget(self.mainWidget.resetDMDPushButton)
 
     def setMode(self):
         """
