@@ -1,3 +1,51 @@
+"""
+Quick commands list:
+to open a connection with the DMD:
+    import pycrafter6500
+    controller=pycrafter6500.dmd()
+
+available functions:
+
+#sets the DMD to idle mode
+    controller.idle_on()
+
+#wakes the DMD from idle mode
+    controller.idle_off()
+
+#sets the DMD to standby
+    controller.standby()
+
+#wakes the DMD from standby
+    controller.wakeup()
+
+#resets the DMD
+    controller.reset()
+
+#changes the dmd operating mode:
+#mode=0 for normal video mode
+#mode=1 for pre stored pattern mode
+#mode=2 for video pattern mode
+#mode=3 for pattern on the fly mode
+    controller.changemode(mode)
+
+    controller.startsequence()
+    controller.pausesequence()
+    controller.stopsequence()
+
+
+#defines a sequence:
+    controller.defsequence(images,exposures,trigger in,dark time,trigger out, repetitions)
+
+defines a sequence for pattern on the fly mode. Inputs are:
+
+images: python list of numpy arrays, with size (1080,1920), dtype uint8, and filled with binary values (1 and 0 only)
+exposures: python list or numpy array with the exposure times in microseconds of each image. Length must be equal to the images list.
+trigger in: python list or numpy array of boolean values determing wheter to wait for an external trigger before exposure. Length must be equal to the images list.
+dark time: python list or numpy array with the dark times in microseconds after each image. Length must be equal to the images list.
+trigger out: python list or numpy array of boolean values determing wheter to emit an external trigger after exposure. Length must be equal to the images list.
+repetitions: number of repetitions of the sequence. set to 0 for infinite loop.
+"""
+
 import usb.core
 import usb.util
 import time
@@ -349,3 +397,33 @@ if __name__ == '__main__':
     dlp.defsequence(images, exposure, trigger_in, dark_time, trigger_out, 0)
 
     # dlp.startsequence()
+	
+    number_of_images = len(images)
+
+    dlp = dmd()
+
+    dlp.stopsequence()
+
+    dlp.changemode(3)
+
+    exposure = [1000000] * number_of_images
+    dark_time = [0] * number_of_images
+    trigger_in = [False] * number_of_images
+    trigger_out = [1] * number_of_images
+
+    """
+    images: python list of numpy arrays, with size (1080,1920), dtype uint8, and filled with binary values (1 and 0 only)
+    exposures: python list or numpy array with the exposure times in microseconds of each image. 
+        Length must be equal to the images list.
+    trigger in: python list or numpy array of boolean values determing wheter to wait for an external trigger before exposure. 
+        Length must be equal to the images list.
+    dark time: python list or numpy array with the dark times in microseconds after each image. 
+        Length must be equal to the images list.
+    trigger out: python list or numpy array of boolean values determing wheter to emit an external trigger after exposure. 
+        Length must be equal to the images list.
+    repetitions: number of repetitions of the sequence. set to 0 for infinite loop.
+    """
+
+    dlp.defsequence(images, exposure, trigger_in, dark_time, trigger_out, 1)
+
+    dlp.startsequence()

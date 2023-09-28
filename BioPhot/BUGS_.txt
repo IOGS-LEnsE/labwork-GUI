@@ -1,0 +1,12 @@
+TO MODIFY !
+-----------
+
+- FPS a init à 10 (si possible)
+- Répertoire des patterns par défaut à changer !!! Pattern Choice
+
+- si pas d'image chargée, bug lors du LOAD
+
+TO ADD !!
+---------
+- Blacklevel 
+- Expo Time / FPS / BlackLevel --> qeditline to add to enter a value by hand
