@@ -28,6 +28,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QVB
 from PyQt6.QtWidgets import QPushButton, QLabel
 from PyQt6.QtCore import Qt, pyqtSignal
 from SupOpNumTools.pyqt6.TargetWidget import TargetWidget
+from widgets.CameraUVCWidget import CameraUVCWidget
 
 # Global Constants
 ACTIVE_COLOR = "#45B39D"
@@ -85,7 +86,7 @@ class PhotodiodeWidget(QWidget):
         self.display_widget.setLayout(self.display_layout)
         self.layout.addWidget(self.display_widget, 1, 0)
 
-        self.camera_widget = QWidget()
+        self.camera_widget = QWidget() #CameraUVCWidget()
         self.camera_widget.setStyleSheet('background-color:lightgray;')
         self.layout.addWidget(self.camera_widget, 0, 1)
 
@@ -124,6 +125,7 @@ class PhotodiodeWidget(QWidget):
         x, y = self.get_position()
         self.x_display.setText('X = '+str(x))
         self.y_display.setText('Y = '+str(y))
+        # self.camera_widget.refresh()
         self.target.update()
 
 # -------------------------------

@@ -117,8 +117,8 @@ class TargetWidget(QWidget):
         Returns:
             change the position on the graphical target
         """
-        self.pos_x = x
-        self.pos_y = y
+        self.pos_x = x*10
+        self.pos_y = y*10
         self.update()
 
     def get_position(self):
