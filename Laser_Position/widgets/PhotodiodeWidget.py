@@ -86,7 +86,7 @@ class PhotodiodeWidget(QWidget):
         self.display_widget.setLayout(self.display_layout)
         self.layout.addWidget(self.display_widget, 1, 0)
 
-        self.camera_widget = QWidget() #CameraUVCWidget()
+        self.camera_widget = QWidget() # CameraUVCWidget()
         self.camera_widget.setStyleSheet('background-color:lightgray;')
         self.layout.addWidget(self.camera_widget, 0, 1)
 

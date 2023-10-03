@@ -46,6 +46,7 @@ class CameraUVCWidget(QWidget):
 
         self.camera_index = 0
         self.camera_cap = cv2.VideoCapture(self.camera_index, cv2.CAP_MSMF)
+        self.camera_nb = 1 #self.test_nb_cam()
 
         
         # Elements for displaying camera
@@ -53,20 +54,53 @@ class CameraUVCWidget(QWidget):
         self.frame_width = self.width()-30
         self.frame_height = self.height()-20
 
-
         self.layout = QGridLayout()
-
-        # 
-
+        self.layout.addWidget(self.camera_display, 0, 0, 2, 0)
+        
+        self.prev_cam = QPushButton('Previous Cam')
+        self.next_cam = QPushButton('Next Cam')
+        self.prev_cam.clicked.connect(self.prev_cam_action)
+        self.next_cam.clicked.connect(self.next_cam_action)
+        
+        self.layout.addWidget(self.prev_cam, 1, 0)
+        self.layout.addWidget(self.next_cam, 1, 1)
+        
         self.setLayout(self.layout)
+        
+    def prev_cam_action(self):
+        print(f'-- Actual={self.camera_index} / Last={self.camera_nb}')
+        if self.camera_index > 0:
+            self.camera_index -= 1
+            self.camera_cap.release()
+            self.camera_cap = cv2.VideoCapture(self.camera_index, cv2.CAP_MSMF)
+        
+    def next_cam_action(self):
+        print(f'++ Actual={self.camera_index} / Last={self.camera_nb}')
+        if self.camera_index < self.camera_nb :
+            print('CHANGING !!')
+            self.camera_index += 1
+            self.camera_cap.release()
+            self.camera_cap = cv2.VideoCapture(self.camera_index, cv2.CAP_MSMF)
+        
+        
+    def test_nb_cam(self):
+        index = 0
+        while True:
+            cap = cv2.VideoCapture(index)
+            if not cap.read()[0]:
+                break
+            cap.release()
+            index += 1
+        return index
+
+    def get_nb_cam(self):
+        return self.camera_nb
 
     def refresh(self):
         # Reshape of the frame to adapt it to the widget
         ret, self.camera_array = self.camera_cap.read()
-        print(self.camera_array.shape)
         self.frame_width = self.width()-30
         self.frame_height = self.height()-20
-        print(f'W={self.frame_width} / H={self.frame_height}')
         self.camera_disp2 = cv2.resize(self.camera_array,
                                      dsize=(self.frame_width, 
                                             self.frame_height), 
@@ -81,6 +115,12 @@ class CameraUVCWidget(QWidget):
         pmap = QPixmap.fromImage(p)
         
         self.camera_display.setPixmap(pmap)
+    
+    def inc_camera_index(self):
+        
+
+        
+        self.camera_index += 1
 
 # -------------------------------
 

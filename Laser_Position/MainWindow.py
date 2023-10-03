@@ -136,12 +136,14 @@ class MainWindow(QMainWindow):
             if x_phd_value is not None:
                 self.central_widget.set_position(x_phd_value, y_phd_value)
             self.central_widget.refresh_target()
-        elif self.mode == 'S' or self.mode == 'E':  # Scanner manual control / central position
+        elif self.mode == 'S' or self.mode == 'E':  
+            # Scanner manual control / central position
             scanner_x, scanner_y = self.central_widget.get_scanner_position()
             x_phd_value, y_phd_value = self.set_scanner_position(scanner_x, scanner_y)
             if x_phd_value is not None:
                 self.central_widget.set_position(x_phd_value, y_phd_value)
             self.central_widget.refresh_target()
+            
         elif self.mode == 'L':
             if self.nucleo_board.is_step_over():
                 self.main_timer.stop()
