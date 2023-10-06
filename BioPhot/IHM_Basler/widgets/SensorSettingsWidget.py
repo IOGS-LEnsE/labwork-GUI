@@ -84,7 +84,7 @@ class Setting_Widget_Int(QWidget):
         self.setStyleSheet("border-style: none")
 
         # Setting slider parameters
-        self.slider = QSlider(Qt.Horizontal)
+        self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setMinimum(minimumValue)
         self.slider.setMaximum(maximumValue)
         self.slider.setValue(initialisationValue)
@@ -182,7 +182,7 @@ class Setting_Widget_Float(QWidget):
         self.layout = QGridLayout()
         # self.line = QLineEdit(self)
         self.labelValue = QLabel(settingLabel)
-        self.slider = QSlider(Qt.Horizontal)
+        self.slider = QSlider(Qt.Orientation.Horizontal)
         self.initUI()
 
     def initUI(self):

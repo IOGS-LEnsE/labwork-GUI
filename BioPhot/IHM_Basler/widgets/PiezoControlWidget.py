@@ -43,7 +43,7 @@ class Piezo_Control_Widget(QWidget):
         label.setStyleSheet("border-style: none")
 
         self.finalValueLabel = QLabel()
-        self.finalValueLabel.setAlignment(Qt.AlignCenter)
+        self.finalValueLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.finalValueLabel.setStyleSheet("background-color: white; padding: 4px; color: black; border-style: solid; border-width: 1px;")
         self.setFinalValueLabel()
 
@@ -114,7 +114,7 @@ class Setting_Widget_Int(QWidget):
         self.initialisationValue = initialisationValue
 
         # Setting the slider
-        self.slider = QSlider(Qt.Horizontal)
+        self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setMinimum(self.minimumValue)
         self.slider.setMaximum(self.maximumValue)
         self.slider.setValue(self.initialisationValue)

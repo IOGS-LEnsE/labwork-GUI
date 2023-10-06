@@ -7,15 +7,14 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QPushButton, QGridLayout, QComboBox, QSlider, QLineEdit
 )
 from PyQt6.QtGui import QPixmap, QImage
+from PyQt6.QtWidgets import QMainWindow, QLabel, QComboBox, QWidget, QGroupBox
+from PyQt6.QtCore import QTimer, Qt
 
 # Standard
 import numpy as np
 import cv2
 import sys
 import math
-
-from PyQt5.QtWidgets import QMainWindow, QLabel, QComboBox, QWidget, QGroupBox
-from PyQt5.QtCore import QTimer, Qt
 
 # Camera
 from pyueye import ueye
@@ -71,7 +70,7 @@ class Camera_Widget(QWidget):
         self.cameraDisplay = QLabel()
 
         # Center the camera widget
-        self.cameraDisplay.setAlignment(Qt.AlignCenter)
+        self.cameraDisplay.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Create a self.layout and add widgets
         self.layout = QGridLayout()

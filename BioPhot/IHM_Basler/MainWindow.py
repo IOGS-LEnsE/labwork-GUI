@@ -67,7 +67,7 @@ class Main_Widget(QWidget):
         # Create the several widgets for the Toolbar
         self.modeWidget = Mode_Widget(mode=self.mode)
         self.saveWidget = Save_Widget()
-
+        '''
         # Setting the save function and directory between the saveButton and the cameraWidget
         self.saveWidget.directoryPushButton.clicked.connect(lambda: self.directory())
         self.saveWidget.savePushButton.clicked.connect(
@@ -86,12 +86,10 @@ class Main_Widget(QWidget):
         # Setting the automatic start button 
         self.automaticModeWidget.startButton.clicked.connect(
             lambda: self.launchScan())
-
+            
         # Setting a reset DMD button
-        '''
         self.resetDMDPushButton = QPushButton("Reset DMD")
         self.resetDMDPushButton.clicked.connect(lambda: self.DMDSettingsWidget.resetDMD())
-        '''
 
         # Setting the utilisation mode of the application and launching the next updates
         self.setMode()
@@ -112,6 +110,7 @@ class Main_Widget(QWidget):
         self.cameraWidget.connectCamera()
         self.initSettings()
         self.cameraWidget.launchVideo()
+        '''
 
     # General methods used by the interface
     def initSettings(self):
@@ -158,6 +157,7 @@ class Main_Widget(QWidget):
         Method used to set the utilization mode of the application.
         """
         if self.mode == "Manual":
+            '''
             self.sensorSettingsWidget.setEnabled(True)
             self.hardwareConnectionWidget.setEnabled(True)
             self.DMDSettingsWidget.setEnabled(True)
@@ -170,8 +170,10 @@ class Main_Widget(QWidget):
             self.DMDSettingsWidget.patternChoiceWindowWidget2.setEnabled(True)
             self.DMDSettingsWidget.patternChoiceWindowWidget3.setEnabled(True)
             # self.resetDMDPushButton.setStyleSheet("background: #ff8d3f; color: black; border-width: 1px;")
-
+            '''
+            pass
         elif self.mode == "Automatic":
+            '''
             self.sensorSettingsWidget.setEnabled(False)
             self.hardwareConnectionWidget.setEnabled(False)
             self.DMDSettingsWidget.setEnabled(False)
@@ -184,6 +186,8 @@ class Main_Widget(QWidget):
             self.DMDSettingsWidget.patternChoiceWindowWidget2.setEnabled(False)
             self.DMDSettingsWidget.patternChoiceWindowWidget3.setEnabled(False)
             # self.resetDMDPushButton.setStyleSheet("background: #7fadff; color: black; border-width: 1px;")
+            '''
+            pass
 
     def changeMode(self):
         """
@@ -525,15 +529,13 @@ class Main_Window(QMainWindow):
         self.setWindowTitle("TP : Microscope à illumination structurée")
         self.setWindowIcon(QIcon("./images/IOGSLogo.jpg"))
         tl, bl, tr, br = self.screen().availableGeometry().getCoords() # QRect
-        print(tl)
-        print(bl)
         self.setGeometry(5, bl+30, tr-5, br-50)
 
 
         # self.setGeometry(int(relative_x_window), int(relative_y_window), int(relative_width_window), int(relative_height_window))
 
         # Set the widget as the central widget of the window
-        #self.mainWidget = Main_Widget(mode=self.mode)
+        self.mainWidget = Main_Widget(mode=self.mode)
         #self.setCentralWidget(self.mainWidget)
 
         '''
@@ -569,13 +571,13 @@ class Main_Window(QMainWindow):
             int(0.9 - (relative_y_pattern_window + screen_rect.height() * (
                 0.05) + relative_height_pattern_window + screen_rect.height() * (0.025))))
         '''
-        '''
+
         # Creating the toolbar
         self.toolbar = self.addToolBar("Toolbar")
         self.toolbar.setStyleSheet("background-color: #bfbfbf; border-radius: 10px; border-width: 1px;"
                                    "border-color: black; padding: 6px; font: bold 12px; color: white;"
                                    "text-align: center; border-style: solid;")
-                                   
+        '''                     
         # Connecting the modeWidget to the Toolbar
         self.setMode()
         self.mainWidget.modeWidget.toggle.stateChanged.connect(lambda: self.setMode())
