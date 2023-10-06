@@ -7,17 +7,17 @@ import numpy as np
 import cv2
 import time
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QFileDialog, QPushButton
-from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QIcon
-from CameraWidget import Camera_Widget
-from SensorSettingsWidget import Sensor_Settings_Widget
-from HardwareConnectionWidget import Hardware_Connection_Widget
-from DMDSettingsWidget import DMD_Settings_Widget
-from AutomaticModeWidget import Automatic_Mode_Widget
-from PiezoControlWidget import Piezo_Control_Widget
-from ModeWidget import Mode_Widget
-from SaveToolbarWidget import Save_Widget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QFileDialog, QPushButton
+from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QIcon
+from widgets.CameraWidget import Camera_Widget
+from widgets.SensorSettingsWidget import Sensor_Settings_Widget
+from widgets.HardwareConnectionWidget import Hardware_Connection_Widget
+from widgets.DMDSettingsWidget import DMD_Settings_Widget
+from widgets.AutomaticModeWidget import Automatic_Mode_Widget
+from widgets.PiezoControlWidget import Piezo_Control_Widget
+from widgets.ModeWidget import Mode_Widget
+from widgets.SaveToolbarWidget import Save_Widget
 
 # -------------------------------------------------------------------------------------------------------
 
@@ -523,25 +523,20 @@ class Main_Window(QMainWindow):
 
         # Define Window title and logo
         self.setWindowTitle("TP : Microscope à illumination structurée")
-        self.setWindowIcon(QIcon("IOGSLogo.jpg"))
+        self.setWindowIcon(QIcon("./images/IOGSLogo.jpg"))
+        tl, bl, tr, br = self.screen().availableGeometry().getCoords() # QRect
+        print(tl)
+        print(bl)
+        self.setGeometry(5, bl+30, tr-5, br-50)
 
-        # Get the relative values of the screen to set up the whole thing
-        desktop = QApplication.desktop()
-        screen_rect = desktop.screenGeometry()
 
-        # Calculate the desired relative coordinates
-        relative_x_window = screen_rect.width() * 0.0025  # Relative X-coordinate
-        relative_y_window = screen_rect.height() * 0.05  # Relative Y-coordinate
-        relative_width_window = screen_rect.width() * 0.650  # Relative width
-        relative_height_window = screen_rect.height() * (0.9)  # Relative height
-
-        self.setGeometry(int(relative_x_window), int(relative_y_window), int(relative_width_window),
-                         int(relative_height_window))
+        # self.setGeometry(int(relative_x_window), int(relative_y_window), int(relative_width_window), int(relative_height_window))
 
         # Set the widget as the central widget of the window
-        self.mainWidget = Main_Widget(mode=self.mode)
-        self.setCentralWidget(self.mainWidget)
+        #self.mainWidget = Main_Widget(mode=self.mode)
+        #self.setCentralWidget(self.mainWidget)
 
+        '''
         # Same thing for the windows
         relative_x_pattern_window = screen_rect.width() * 0.6575  # Relative X-coordinate
         relative_y_pattern_window = screen_rect.height() * 0.05  # Relative Y-coordinate
@@ -573,13 +568,14 @@ class Main_Window(QMainWindow):
             int(relative_width_pattern_window),
             int(0.9 - (relative_y_pattern_window + screen_rect.height() * (
                 0.05) + relative_height_pattern_window + screen_rect.height() * (0.025))))
-
+        '''
+        '''
         # Creating the toolbar
         self.toolbar = self.addToolBar("Toolbar")
         self.toolbar.setStyleSheet("background-color: #bfbfbf; border-radius: 10px; border-width: 1px;"
                                    "border-color: black; padding: 6px; font: bold 12px; color: white;"
                                    "text-align: center; border-style: solid;")
-
+                                   
         # Connecting the modeWidget to the Toolbar
         self.setMode()
         self.mainWidget.modeWidget.toggle.stateChanged.connect(lambda: self.setMode())
@@ -588,6 +584,9 @@ class Main_Window(QMainWindow):
         self.toolbar.addWidget(self.mainWidget.modeWidget)
         self.toolbar.addWidget(self.mainWidget.saveWidget)
         # self.toolbar.addWidget(self.mainWidget.resetDMDPushButton)
+        '''
+        self.show()
+
 
     def setMode(self):
         """
@@ -613,4 +612,4 @@ if __name__ == "__main__":
     window = Main_Window()
     window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
