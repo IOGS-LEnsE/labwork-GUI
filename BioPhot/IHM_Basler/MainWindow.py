@@ -68,26 +68,24 @@ class Main_Widget(QWidget):
         self.piezoControlWidget.updated.connect(lambda: self.movePiezo())
 
         # Create the several widgets for the Toolbar
-        self.modeWidget = Mode_Widget(mode=self.mode)
         self.saveWidget = Save_Widget()
 
         # Setting the save function and directory between the saveButton and the cameraWidget
         self.saveWidget.directoryPushButton.clicked.connect(lambda: self.directory_save())
         self.saveWidget.savePushButton.clicked.connect(
             lambda: self.saveWidget.saveImage(self.cameraWidget.get_frame()))
-        '''
+
         # Setting the save function and the folder function between the saveButton and the parameters window
         self.automaticModeWidget.parametersAutoModeWindow.directoryPushButton.clicked.connect(
-            lambda: self.directory())
+            lambda: self.directory_save())
         self.automaticModeWidget.parametersAutoModeWindow.saveParametersPushButton.clicked.connect(
             lambda: self.saveParameters())
-
-        
 
         # Setting the automatic start button 
         self.automaticModeWidget.startButton.clicked.connect(
             lambda: self.launchScan())
-            
+
+        '''
         # Setting a reset DMD button
         self.resetDMDPushButton = QPushButton("Reset DMD")
         self.resetDMDPushButton.clicked.connect(lambda: self.DMDSettingsWidget.resetDMD())
@@ -107,11 +105,21 @@ class Main_Widget(QWidget):
         layoutMain.addWidget(self.automaticModeWidget, 3, 5, 1, 4)  # row = 3, column = 5, rowSpan = 1, columnSpan = 4
         layoutMain.addWidget(self.piezoControlWidget, 4, 5, 3, 4)  # row = 4, column = 5, rowSpan = 3, columnSpan = 4
 
+        self.setLayout(layoutMain)
+
         self.cameraWidget.connectCamera()
         self.initSettings()
         self.cameraWidget.launchVideo()
+        self.timer = QTimer(self)
 
-        self.setLayout(layoutMain)
+        # Internal parameters
+        self.z_init = 0
+        self.z_final = 0
+        self.z_step = 0
+        self.cam_expo = 0
+        self.cam_FPS = 0
+        self.cam_blacklevel = 0
+        self.patterns = []
 
     # General methods used by the interface
     def initSettings(self):
@@ -120,13 +128,10 @@ class Main_Widget(QWidget):
         """
         # Initialisation of the FPS setting
         minFPS, maxFPS = self.cameraWidget.getFPSRange()
-        print(f'MIN FPS = {minFPS} / MAX FPS = {maxFPS}')
         self.sensorSettingsWidget.FPS.slider.setMinimum(minFPS)
         self.sensorSettingsWidget.FPS.slider.setMaximum(maxFPS)
         self.sensorSettingsWidget.FPS.slider.setValue(maxFPS)
-        print(f'FPS = {self.sensorSettingsWidget.FPS.getValue()}')
         self.cameraWidget.camera.set_frame_rate(self.sensorSettingsWidget.FPS.getValue())
-        print(f'FPS2 = {self.cameraWidget.camera.get_frame_rate()}')
 
         self.sensorSettingsWidget.FPS.slider.valueChanged.connect(
             lambda: self.cameraWidget.camera.set_frame_rate(self.sensorSettingsWidget.FPS.getValue()))
@@ -253,17 +258,16 @@ class Main_Widget(QWidget):
             if not self.hardwareConnectionWidget.piezo.isConnected():
                 return print("The HardWare for the Piezo is not connected : you must connect it first.")
 
-        z_displacement, z_step = parameters['Z Displacement'], parameters['Z Step']
+        z_init, z_final, z_step = parameters['Z Init'], parameters['Z Final'], parameters['Z Step']
 
         # Set the camera with the values of the parameter file
         Exposure, FPS, BlackLevel = parameters['Exposure time'], parameters['FPS'], parameters['BlackLevel']
         print(f'Expo Time = {Exposure}')
-        # self.sensorSettingsWidget.exposureTime.setValue(Exposure)
+        self.sensorSettingsWidget.exposureTime.setValue(Exposure * 1000)
         self.sensorSettingsWidget.FPS.setValue(FPS)
-        #·self.sensorSettingsWidget.blackLevel.setValue(BlackLevel)
 
         # Take the list of the Zs
-        zs_list = self.calculateZs(z_displacement, z_step)
+        zs_list = self.calculateZs(z_init, z_final, z_step)
 
         # Create a folder to save the scans
         scan_dir = self.createScanFolder()
@@ -290,14 +294,15 @@ class Main_Widget(QWidget):
                 self.cameraWidget.refreshGraph()
                 self.saveImage(pattern_number, index)
 
-            # Set up the prograssion bar
+            # Set up the progression bar
             progression = 100 * (index + 1) // len(zs_list)
             self.automaticModeWidget.progressionBar.setValue(progression)
             self.printProgressBar(progression, 100, suffix="\n\n")
-        self.timer = QTimer(self)
+        '''
         self.timer.setInterval(5000)
         self.timer.timeout.connect(lambda: self.setProgressBarTo0())
         self.timer.start()
+        '''
 
         # COPY parameters.txt to SCAN_XX/parameters.txt
         if self.path is None:
@@ -317,29 +322,37 @@ class Main_Widget(QWidget):
         else:
             filename = self.path + "/parameters.txt"
 
-        # Securities 
-        if (self.automaticModeWidget.parametersAutoModeWindow.zDisplacementLine.text()) == "" or (
-        not self.automaticModeWidget.parametersAutoModeWindow.zDisplacementLine.text().isdigit()):
-            return print("You must enter a correct value as Z Displacement : an integer.")
+        # Intern save
+        self.z_init = self.automaticModeWidget.parametersAutoModeWindow.z_init.get_real_value()
+        self.z_final = self.automaticModeWidget.parametersAutoModeWindow.z_final.get_real_value()
+        if self.z_init > self.z_final:
+            self.z_final, self.z_init = self.z_init, self.z_final
+        self.z_step = self.automaticModeWidget.parametersAutoModeWindow.z_step.get_real_value()
 
-        if (self.automaticModeWidget.parametersAutoModeWindow.zStepLine.text()) == "" or (
-        not self.automaticModeWidget.parametersAutoModeWindow.zStepLine.text().isdigit()):
-            return print("You must enter a correct value as Z Step Line : an integer.")
+        self.cam_expo = self.sensorSettingsWidget.exposureTime.value
+        self.cam_FPS = self.sensorSettingsWidget.FPS.getValue()
+        self.cam_blacklevel = self.sensorSettingsWidget.blackLevel.getValue()
+        self.patterns = [self.DMDSettingsWidget.patternChoiceWindowWidget1.path,
+                         self.DMDSettingsWidget.patternChoiceWindowWidget2.path,
+                         self.DMDSettingsWidget.patternChoiceWindowWidget3.path]
 
+        # File save
         with open(filename, "w") as file:
             file.write(
-                f"Z Displacement = {self.automaticModeWidget.parametersAutoModeWindow.zDisplacementLine.text()}\n")
-            file.write(f"Z Step = {self.automaticModeWidget.parametersAutoModeWindow.zStepLine.text()}\n")
+                f"Z Init (um) = {self.z_init}\n")
+            file.write(
+                f"Z Final (um) = {self.z_final}\n")
+            file.write(f"Z Step (nm) = {self.z_step}\n")
             file.write("\n")
             file.write("Camera settings :\n")
-            file.write(f"Exposure time = {self.sensorSettingsWidget.exposureTime.value}\n")
-            file.write(f"FPS = {self.sensorSettingsWidget.FPS.getValue()}\n")
-            file.write(f"BlackLevel = {self.sensorSettingsWidget.blackLevel.getValue()}\n")
+            file.write(f"Exposure time = {self.cam_expo}\n")
+            file.write(f"FPS = {self.cam_FPS}\n")
+            file.write(f"BlackLevel = {self.cam_blacklevel}\n")
             file.write("\n")
             file.write("Patterns loaded :\n")
-            file.write(f"Pattern 1 = {self.DMDSettingsWidget.patternChoiceWindowWidget1.path}\n")
-            file.write(f"Pattern 2 = {self.DMDSettingsWidget.patternChoiceWindowWidget2.path}\n")
-            file.write(f"Pattern 3 = {self.DMDSettingsWidget.patternChoiceWindowWidget3.path}\n")
+            file.write(f"Pattern 1 = {self.patterns[0]}\n")
+            file.write(f"Pattern 2 = {self.patterns[1]}\n")
+            file.write(f"Pattern 3 = {self.patterns[2]}\n")
 
         self.automaticModeWidget.parametersAutoModeWindow.hide()
 
@@ -362,11 +375,14 @@ class Main_Widget(QWidget):
         with open(file_path, 'r') as file:
             for line in file:
                 line = line.strip()
-                if line.startswith('Z Displacement'):
-                    z_displacement = int(line.split('=')[1].strip())
-                    parameters['Z Displacement'] = z_displacement
+                if line.startswith('Z Init'):
+                    z_init = float(line.split('=')[1].strip())
+                    parameters['Z Init'] = z_init
+                elif line.startswith('Z Final'):
+                    z_final = float(line.split('=')[1].strip())
+                    parameters['Z Final'] = z_final
                 elif line.startswith('Z Step'):
-                    z_step = int(line.split('=')[1].strip())
+                    z_step = float(line.split('=')[1].strip())
                     parameters['Z Step'] = z_step
                 elif line.startswith('Exposure time'):
                     exposure_time = float(line.split('=')[1].strip())
@@ -382,25 +398,25 @@ class Main_Widget(QWidget):
                     pattern_number = int(pattern_parts[0].split()[-1])
                     pattern_path = pattern_parts[1].strip()
                     parameters['Patterns'].append({'Pattern Number': pattern_number, 'Pattern Path': pattern_path})
-
         return parameters
 
-    def calculateZs(self, z_displacement, z_step):
+    def calculateZs(self, z_init, z_final, z_step):
         """
         A method used to set up the different values that will set the piezo.
 
         Args:
-            z_displacement (int): Z Displacement in um.
-            z_step (int): Z Step in nm.
+            z_init (float): Z Init in um.
+            z_final (float) : Z Final in um.
+            z_step (float): Z Step in nm.
 
         Returns:
             list of tuples: list of the Z Displacement and Z Step in um and nm.
         """
         zs_axis = []
         fine_zs = []
-        current_z = 0
+        current_z = z_init
 
-        while current_z <= z_displacement:
+        while current_z < z_final:
             z_axis = int(current_z)
             fine_z = int((current_z - z_axis) * 1000)
             zs_axis.append(z_axis)
@@ -408,12 +424,14 @@ class Main_Widget(QWidget):
 
             current_z += z_step * 10 ** -3
 
-            if current_z > z_displacement:
+            '''
+            if current_z > z_final:
                 z_axis = int(z_displacement)
                 fine_z = int((z_displacement - z_axis) * 1000)
                 zs_axis.append(z_axis)
                 fine_zs.append(fine_z)
                 break
+            '''
 
         combined_zs = [[zs_axis[i], fine_zs[i]] for i in range(len(zs_axis) - 1)]
         return combined_zs
@@ -539,7 +557,6 @@ class Main_Window(QMainWindow):
         # self.mainWidget.modeWidget.toggle.stateChanged.connect(lambda: self.setMode())
 
         # Adding Widgets to the Toolbar
-        self.toolbar.addWidget(self.mainWidget.modeWidget)
         self.toolbar.addWidget(self.mainWidget.saveWidget)
         # self.toolbar.addWidget(self.mainWidget.resetDMDPushButton)
 

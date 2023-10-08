@@ -15,12 +15,6 @@ class Mode_Widget(QWidget):
         Initialisation of our widget.
         """
         super().__init__()
-        labelAutomatic = QLabel("Automatic")
-        labelAutomatic.setStyleSheet("font: bold; color: white; border-style: none;")
-
-        labelManual = QLabel("Manual")
-        labelManual.setStyleSheet("font: bold; color: white; border-style: none;")
-
         # Adding all to the mainLayout
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(labelAutomatic)

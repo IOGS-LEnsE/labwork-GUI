@@ -4,6 +4,8 @@ import os
 from PyQt6.QtWidgets import QApplication, QGridLayout, QWidget, QPushButton, QLabel, QLineEdit, QPushButton, QFileDialog
 from PyQt6.QtGui import QIcon
 
+from SupOpNumTools.pyqt6.IncDecWidget import IncDecWidget
+
 # -------------------------------------------------------------------------------------------------------
 
 # Colors
@@ -49,32 +51,21 @@ class Parameters_AutoMode_Window(QWidget):
         self.directoryPushButton = QPushButton("Directory")
         self.directoryPushButton.setStyleSheet("background: #c5e0b4; color: black;")
 
-        self.z0_displacement_label = QLabel('Init Z value / Z0 (um)')
-        self.z0_displacement_label.setStyleSheet("border-style: none;")
-        self.z0_displacement_line = QLineEdit()
-        self.z0_displacement_line.setStyleSheet("background: white; color: black;")
-
-        self.z_final_label = QLabel("Final Z value /Zf (um)")
-        self.z_final_label.setStyleSheet("border-style: none;")
-        self.z_final_line = QLineEdit()
-        self.z_final_line.setStyleSheet("background: white; color: black;")
-
-        self.z_step_label = QLabel("Z Step (nm)")
-        self.z_step_label.setStyleSheet("border-style: none;")
-        self.z_step_line = QLineEdit()
-        self.z_step_line.setStyleSheet("background: white; color: black;")
+        self.z_init = IncDecWidget('Z Init (um)', values=['0.01', '0.1', '1'], limits=[0, 10])
+        self.z_init.set_units('µm')
+        self.z_final = IncDecWidget('Z Final (um)', values=['0.01', '0.1', '1'], limits=[0, 10])
+        self.z_final.set_units('µm')
+        self.z_step = IncDecWidget('Z Step (nm)', values=['1', '10', '100'], limits=[0, 1000])
+        self.z_step.set_units('nm')
 
         self.saveParametersPushButton = QPushButton("Save Parameters")
         self.saveParametersPushButton.setStyleSheet("background: #c5e0b4; color: black;")
 
         layout.addWidget(self.directoryLabel, 0, 0, 1, 2)  # row = 0, column = 0, rowSpan = 1, columnSpan = 2
         layout.addWidget(self.directoryPushButton, 0, 2, 1, 2)  # row = 0, column = 2, rowSpan = 1, columnSpan = 2
-        layout.addWidget(self.z0_displacement_label, 1, 0, 1, 2)
-        layout.addWidget(self.z0_displacement_line, 1, 3, 1, 1)
-        layout.addWidget(self.z_final_label, 2, 0, 1, 2)
-        layout.addWidget(self.z_final_line, 2, 3, 1, 1)
-        layout.addWidget(self.z_step_label, 3, 0, 1, 2)
-        layout.addWidget(self.z_step_line, 3, 3, 1, 1)
+        layout.addWidget(self.z_init, 1, 0, 1, 5)
+        layout.addWidget(self.z_final, 2, 0, 1, 5)
+        layout.addWidget(self.z_step, 3, 0, 1, 5)
         layout.addWidget(self.saveParametersPushButton, 4, 0, 1, 2)
 
         self.setLayout(layout)
