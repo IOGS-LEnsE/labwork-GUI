@@ -54,7 +54,8 @@ class Main_Widget(QWidget):
         self.setStyleSheet("background: #f2f2f2;")
         self.mode = mode
         self.path = None
-        self.scanFolderPath = None
+        self.scanFolderPath = os.path.expanduser( '~' )
+        self.default_mires_path = '../MiresDMD/'
 
         # Create the several widgets for the MainWidget
         self.cameraWidget = Camera_Widget()
@@ -67,12 +68,12 @@ class Main_Widget(QWidget):
         # Create the several widgets for the Toolbar
         self.modeWidget = Mode_Widget(mode=self.mode)
         self.saveWidget = Save_Widget()
-        '''
+
         # Setting the save function and directory between the saveButton and the cameraWidget
-        self.saveWidget.directoryPushButton.clicked.connect(lambda: self.directory())
+        self.saveWidget.directoryPushButton.clicked.connect(lambda: self.directory_save())
         self.saveWidget.savePushButton.clicked.connect(
             lambda: self.saveWidget.saveImage(self.cameraWidget.get_frame()))
-
+        '''
         # Setting the save function and the folder function between the saveButton and the parameters window
         self.automaticModeWidget.parametersAutoModeWindow.directoryPushButton.clicked.connect(
             lambda: self.directory())
@@ -94,10 +95,9 @@ class Main_Widget(QWidget):
         # Setting the utilisation mode of the application and launching the next updates
         self.setMode()
         self.modeWidget.toggle.stateChanged.connect(lambda: self.changeMode())
-
+        '''
         # Create and add the widgets into the layout
         layoutMain = QGridLayout()
-        self.setLayout(layoutMain)
 
         layoutMain.addWidget(self.cameraWidget, 0, 0, 4, 4)  # row = 0, column = 0, rowSpan = 4, columnSpan = 4
         layoutMain.addWidget(self.sensorSettingsWidget, 4, 0, 3, 4)  # row = 4, column = 0, rowSpan = 3, columnSpan = 4
@@ -110,7 +110,8 @@ class Main_Widget(QWidget):
         self.cameraWidget.connectCamera()
         self.initSettings()
         self.cameraWidget.launchVideo()
-        '''
+
+        self.setLayout(layoutMain)
 
     # General methods used by the interface
     def initSettings(self):
@@ -157,7 +158,6 @@ class Main_Widget(QWidget):
         Method used to set the utilization mode of the application.
         """
         if self.mode == "Manual":
-            '''
             self.sensorSettingsWidget.setEnabled(True)
             self.hardwareConnectionWidget.setEnabled(True)
             self.DMDSettingsWidget.setEnabled(True)
@@ -170,10 +170,7 @@ class Main_Widget(QWidget):
             self.DMDSettingsWidget.patternChoiceWindowWidget2.setEnabled(True)
             self.DMDSettingsWidget.patternChoiceWindowWidget3.setEnabled(True)
             # self.resetDMDPushButton.setStyleSheet("background: #ff8d3f; color: black; border-width: 1px;")
-            '''
-            pass
         elif self.mode == "Automatic":
-            '''
             self.sensorSettingsWidget.setEnabled(False)
             self.hardwareConnectionWidget.setEnabled(False)
             self.DMDSettingsWidget.setEnabled(False)
@@ -186,8 +183,6 @@ class Main_Widget(QWidget):
             self.DMDSettingsWidget.patternChoiceWindowWidget2.setEnabled(False)
             self.DMDSettingsWidget.patternChoiceWindowWidget3.setEnabled(False)
             # self.resetDMDPushButton.setStyleSheet("background: #7fadff; color: black; border-width: 1px;")
-            '''
-            pass
 
     def changeMode(self):
         """
@@ -215,11 +210,12 @@ class Main_Widget(QWidget):
             ZAxis, FineZ = self.hardwareConnectionWidget.piezo.getPosition()
             print(f"Piezo at : {ZAxis} um, {FineZ} nm")
 
-    def directory(self):
+    def directory_save(self):
         """
         Method used to select a directory to save the parameters and the images into.
         """
         dialog = QFileDialog()
+        dialog.setDirectory(self.scanFolderPath)
         self.path = dialog.getExistingDirectory(None, "Select Folder")
         self.saveWidget.path = self.path
         self.automaticModeWidget.parametersAutoModeWindow.path = self.path
@@ -531,62 +527,25 @@ class Main_Window(QMainWindow):
         tl, bl, tr, br = self.screen().availableGeometry().getCoords() # QRect
         self.setGeometry(5, bl+30, tr-5, br-50)
 
-
-        # self.setGeometry(int(relative_x_window), int(relative_y_window), int(relative_width_window), int(relative_height_window))
-
         # Set the widget as the central widget of the window
         self.mainWidget = Main_Widget(mode=self.mode)
-        #self.setCentralWidget(self.mainWidget)
-
-        '''
-        # Same thing for the windows
-        relative_x_pattern_window = screen_rect.width() * 0.6575  # Relative X-coordinate
-        relative_y_pattern_window = screen_rect.height() * 0.05  # Relative Y-coordinate
-        relative_width_pattern_window = screen_rect.width() * (1 - 0.650 - 0.0025 * 3)  # Relative width
-        relative_height_pattern_window = screen_rect.height() * (0.625)  # Relative height
-
-        self.mainWidget.DMDSettingsWidget.patternChoiceWindowWidget1.setGeometry(
-            int(relative_x_pattern_window),
-            int(relative_y_pattern_window),
-            int(relative_width_pattern_window),
-            int(relative_height_pattern_window))
-
-        self.mainWidget.DMDSettingsWidget.patternChoiceWindowWidget2.setGeometry(
-            int(relative_x_pattern_window),
-            int(relative_y_pattern_window + screen_rect.height() * (0.025)),
-            int(relative_width_pattern_window),
-            int(relative_height_pattern_window))
-
-        self.mainWidget.DMDSettingsWidget.patternChoiceWindowWidget3.setGeometry(
-            int(relative_x_pattern_window),
-            int(relative_y_pattern_window + screen_rect.height() * (0.05)),
-            int(relative_width_pattern_window),
-            int(relative_height_pattern_window))
-
-        self.mainWidget.automaticModeWidget.parametersAutoModeWindow.setGeometry(
-            int(relative_x_pattern_window),
-            int(relative_y_pattern_window + screen_rect.height() * (
-                0.05) + relative_height_pattern_window + screen_rect.height() * (0.025) * 2),
-            int(relative_width_pattern_window),
-            int(0.9 - (relative_y_pattern_window + screen_rect.height() * (
-                0.05) + relative_height_pattern_window + screen_rect.height() * (0.025))))
-        '''
+        self.setCentralWidget(self.mainWidget)
 
         # Creating the toolbar
         self.toolbar = self.addToolBar("Toolbar")
         self.toolbar.setStyleSheet("background-color: #bfbfbf; border-radius: 10px; border-width: 1px;"
                                    "border-color: black; padding: 6px; font: bold 12px; color: white;"
                                    "text-align: center; border-style: solid;")
-        '''                     
+
         # Connecting the modeWidget to the Toolbar
         self.setMode()
-        self.mainWidget.modeWidget.toggle.stateChanged.connect(lambda: self.setMode())
+        # self.mainWidget.modeWidget.toggle.stateChanged.connect(lambda: self.setMode())
 
         # Adding Widgets to the Toolbar
         self.toolbar.addWidget(self.mainWidget.modeWidget)
         self.toolbar.addWidget(self.mainWidget.saveWidget)
         # self.toolbar.addWidget(self.mainWidget.resetDMDPushButton)
-        '''
+
         self.show()
 
 

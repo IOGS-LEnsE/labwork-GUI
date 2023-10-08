@@ -16,7 +16,7 @@ Authors
 
 Use
 ---
-    >>> python IncDecWidget.py
+    python IncDecWidget.py
 """
 
 import sys
@@ -53,7 +53,17 @@ class IncDecWidget(QWidget):
 
     updated = pyqtSignal(str)
 
-    def __init__(self, name="", percent=False):
+    def __init__(self, name="", percent=False, values=None):
+        """
+
+        Args:
+            name: str
+                name of the IncDecWidget - display in a label
+            percent: bool
+                true if the value is in percent
+            values: list of str(float)
+                values to display as the gain of the increment
+        """
         super().__init__()
 
         ''' Global Values '''
@@ -83,7 +93,10 @@ class IncDecWidget(QWidget):
         self.dec_button.setStyleSheet("background:#3EE4FD;font-size:14px; font-weight:bold;")
 
         self.gain_combo = QComboBox()
-        self.gain_combo.addItems(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
+        if values is None :
+            self.gain_combo.addItems(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
+        else:
+            self.gain_combo.addItems(values)
         self.gain_combo.setCurrentIndex(3)
         self.gain_combo.currentIndexChanged.connect(self.gain_changed)
 
@@ -201,8 +214,6 @@ class IncDecWidget(QWidget):
 
     def clear_value(self):
         self.real_value = 0
-        self.ratio_gain = 1.0
-        self.gain_combo.setCurrentIndex(3)
         self.gain_changed()
         self.update_display()
         self.updated.emit('rst')

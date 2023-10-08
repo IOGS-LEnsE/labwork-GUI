@@ -24,14 +24,16 @@ class Parameters_AutoMode_Window(QWidget):
     Args:
         QWidget (class): QWidget can be put in another widget and / or window.
     """
-    def __init__(self):
+    def __init__(self, default_path=None):
         """
         Initialisation of the Widget.
         """
         super().__init__()
-        
-        self.path = None
 
+        if default_path is None:
+            self.path = os.path.expanduser( '~' )
+        else:
+            self.path = default_path
         self.setWindowTitle("Parameters AutoMode Window")
         self.setWindowIcon(QIcon("IOGSLogo.jpg"))
 

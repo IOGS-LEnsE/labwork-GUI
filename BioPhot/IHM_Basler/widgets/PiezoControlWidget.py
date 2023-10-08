@@ -29,9 +29,8 @@ class Piezo_Control_Widget(QWidget):
         layout = QGridLayout()
         
         # Creating and adding our settings
-        self.z_axis_global = QLabel('Z Axis')
+        self.z_axis_global = IncDecWidget('Z Axis Value', values=['0.01', '0.1', '1']) # QLabel('Z Axis')
         #self.z_axis_global.updated.connect(self.z_axis_updated_action)
-
 
         self.ZAxis = Setting_Widget_Int(settingLabel = " Z Axis (um) ", minimumValue = 0, maximumValue = 10, initialisationValue = 1)
         #self.ZAxis.slider.valueChanged.connect(lambda : self.setFinalValueLabel())
@@ -280,4 +279,4 @@ if __name__ == "__main__":
     window = Piezo_Control_Widget()
     window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

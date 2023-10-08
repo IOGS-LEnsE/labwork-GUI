@@ -82,10 +82,8 @@ class Pattern_Choice_Window(QWidget):
         """
         Method used to select a file in .tiff.
         """
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
         file_filter = "BMP files (*.bmp)"
-        path, _ = QFileDialog.getOpenFileName(None, "Select File", "", file_filter, options=options)
+        path, _ = QFileDialog.getOpenFileName(None, "Select File", "", file_filter)
         if path:
             self.path = path
             self.patternChoicePushButton.setText(self.getSmallText())
@@ -155,4 +153,4 @@ if __name__ == "__main__":
     window = Pattern_Choice_Window(1)
     window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

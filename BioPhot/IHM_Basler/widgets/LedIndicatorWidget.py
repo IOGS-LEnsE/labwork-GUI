@@ -25,10 +25,9 @@ class LedIndicator(QAbstractButton):
         realSize = min(self.width(), self.height())
 
         painter = QPainter(self)
-        pen = QPen(Qt.black)
+        pen = QPen(Qt.GlobalColor.black)
         pen.setWidth(1)
 
-        painter.setRenderHint(QPainter.Antialiasing)
         painter.translate(self.width() / 2, self.height() / 2)
         painter.scale(realSize / self.scaledSize, realSize / self.scaledSize)
 

@@ -122,7 +122,7 @@ class Camera_Widget(QWidget):
 
         # Convert the frame into an image
         image = QImage(self.cameraDisp2, self.cameraDisp2.shape[1], self.cameraDisp2.shape[0], self.cameraDisp2.shape[1],
-                       QImage.Format_Indexed8)
+                       QImage.Format.Format_Indexed8)
         pmap = QPixmap(image)
 
         # display it in the cameraDisplay
@@ -458,4 +458,4 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MyWindow()
     main.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
