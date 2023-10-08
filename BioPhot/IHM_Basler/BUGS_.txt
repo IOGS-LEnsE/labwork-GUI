@@ -1,10 +1,11 @@
 TO MODIFY !
 -----------
-
-- FPS a init à 10 (si possible)
-- Répertoire des patterns par défaut à changer !!! Pattern Choice
-
 - si pas d'image chargée, bug lors du LOAD
+
+- Sauvegarde image avec Date+Heure
+- Revoir Gestion des paramètres automatiques
+- Sauvegarder fichier de paramètrage dans répertoire SNAP
+
 
 TO ADD !!
 ---------

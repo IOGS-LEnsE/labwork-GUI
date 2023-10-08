@@ -53,7 +53,7 @@ class IncDecWidget(QWidget):
 
     updated = pyqtSignal(str)
 
-    def __init__(self, name="", percent=False, values=None):
+    def __init__(self, name="", percent=False, values=None, limits=None):
         """
 
         Args:
@@ -63,6 +63,8 @@ class IncDecWidget(QWidget):
                 true if the value is in percent
             values: list of str(float)
                 values to display as the gain of the increment
+            limits: list of float
+                minmum and maximum value of the widget
         """
         super().__init__()
 
@@ -80,6 +82,10 @@ class IncDecWidget(QWidget):
         self.user_value.returnPressed.connect(self.new_value_action)
         self.name.setStyleSheet(styleH)
         self.user_value.setStyleSheet(styleH)
+        if limits is not None:
+            self.limits = limits
+        else:
+            self.limits = None
 
         self.units = ''
         self.units_label = QLabel('')
@@ -93,12 +99,16 @@ class IncDecWidget(QWidget):
         self.dec_button.setStyleSheet("background:#3EE4FD;font-size:14px; font-weight:bold;")
 
         self.gain_combo = QComboBox()
+        self.values_combo = ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
         if values is None :
-            self.gain_combo.addItems(['0.001', '0.01', '0.1', '1', '10', '100', '1000'])
+            self.gain_combo.addItems(self.values_combo)
         else:
-            self.gain_combo.addItems(values)
-        self.gain_combo.setCurrentIndex(3)
+            self.values_combo = values
+            self.gain_combo.addItems(self.values_combo)
+        self.mean_combo = len(self.values_combo) // 2
+        self.gain_combo.setCurrentIndex(self.mean_combo)
         self.gain_combo.currentIndexChanged.connect(self.gain_changed)
+        self.gain_changed()
 
         self.set_zero_button = QPushButton('Set to 0')
         self.set_zero_button.clicked.connect(self.clear_value)
@@ -122,7 +132,14 @@ class IncDecWidget(QWidget):
         ''' Events '''
         # self.slider.valueChanged.connect(self.slider_changed)
         # self.name.clicked.connect(self.value_changed)
-        self.set_value(self.real_value)
+        if self.limits is not None:
+            if self.limits[0] <= self.real_value <= self.limits[1]:
+                self.set_value(self.real_value)
+            else:
+                self.real_value = self.limits[0]
+                self.set_value(self.real_value)
+        else:
+            self.set_value(self.real_value)
         self.update_display()
 
     def gain_changed(self):
@@ -132,12 +149,20 @@ class IncDecWidget(QWidget):
         self.ratio_gain = float(new_gain)
 
     def increase_value(self):
-        self.real_value += self.ratio_gain
+        if self.limits is not None:
+            if self.real_value+self.ratio_gain < self.limits[1]:
+                self.real_value += self.ratio_gain
+        else:
+            self.real_value += self.ratio_gain
         self.update_display()
         self.updated.emit('inc')
 
     def decrease_value(self):
-        self.real_value -= self.ratio_gain
+        if self.limits is not None:
+            if self.real_value-self.ratio_gain > self.limits[0]:
+                self.real_value -= self.ratio_gain
+        else:
+            self.real_value -= self.ratio_gain
         self.update_display()
         self.updated.emit('dec')
 

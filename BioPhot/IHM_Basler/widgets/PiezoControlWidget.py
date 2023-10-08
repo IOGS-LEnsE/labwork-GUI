@@ -1,6 +1,6 @@
 # Libraries to import
 from PyQt6.QtWidgets import QLabel, QWidget, QApplication, QGroupBox, QSlider, QGridLayout, QLineEdit
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 import sys
 import math
 import numpy as np
@@ -15,6 +15,9 @@ class Piezo_Control_Widget(QWidget):
     Args:
         QWidget (class): QWidget can be put in another widget and / or window.
     """
+
+    updated = pyqtSignal(str)
+
     def __init__(self):
         """
         Initialisation of our widget.
@@ -29,34 +32,13 @@ class Piezo_Control_Widget(QWidget):
         layout = QGridLayout()
         
         # Creating and adding our settings
-        self.z_axis_global = IncDecWidget('Z Axis Value', values=['0.01', '0.1', '1']) # QLabel('Z Axis')
-        #self.z_axis_global.updated.connect(self.z_axis_updated_action)
-
-        self.ZAxis = Setting_Widget_Int(settingLabel = " Z Axis (um) ", minimumValue = 0, maximumValue = 10, initialisationValue = 1)
-        #self.ZAxis.slider.valueChanged.connect(lambda : self.setFinalValueLabel())
-
-        self.FineZ = Setting_Widget_Int(settingLabel = " Fine Z (nm) ", minimumValue = 0, maximumValue = 999, initialisationValue = 500)
-        self.FineZ.slider.valueChanged.connect(lambda : self.setFinalValueLabel())
-
-        label = QLabel(" Final Value (um) ")
-        label.setStyleSheet("border-style: none")
-
-        self.finalValueLabel = QLabel()
-        self.finalValueLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.finalValueLabel.setStyleSheet("background-color: white; padding: 4px; color: black; border-style: solid; border-width: 1px;")
-        self.setFinalValueLabel()
-
-        layout.addWidget(self.z_axis_global, 0, 0, 1, 3) # row = 0, column = 0, rowSpan = 1, columnSpan = 3
-        #layout.addWidget(self.FineZ, 1, 0, 1, 3) # row = 1, column = 0, rowSpan = 1, columnSpan = 3
-
-        layout.addWidget(label, 2, 1, 1, 1) # row = 2, column = 1, rowSpan = 1, columnSpan = 1
-        layout.addWidget(self.finalValueLabel, 2, 2, 1, 1) # row = 2, column = 2, rowSpan = 1, columnSpan = 1
-
-        group_box.setLayout(layout)
+        self.z_axis_global = IncDecWidget('Z Axis Value (um)', values=['0.01', '0.1', '1'], limits=[0, 10])
+        self.z_axis_global.set_units('µm')
+        self.z_axis_global.updated.connect(self.z_axis_updated_action)
 
         main_layout = QGridLayout()
-        main_layout.addWidget(group_box, 0, 0, 1, 1) # row = 0, column = 0, rowSpan = 1, columnSpan = 0 <=> QHBoxLayout or V
-        
+        main_layout.addWidget(self.z_axis_global, 0, 0, 1, 3) # row = 0, column = 0, rowSpan = 1, columnSpan = 3
+
         self.setLayout(main_layout)
 
     def setEnabled(self, enabled):
@@ -84,7 +66,10 @@ class Piezo_Control_Widget(QWidget):
         self.finalValueLabel.setText(str(self.value))
 
     def z_axis_updated_action(self):
-        pass
+        self.updated.emit('update')
+
+    def get_value(self):
+        return self.z_axis_global.get_real_value()
 
 #-------------------------------------------------------------------------------------------------------
 

@@ -64,6 +64,8 @@ class Main_Widget(QWidget):
         self.DMDSettingsWidget = DMD_Settings_Widget()
         self.automaticModeWidget = Automatic_Mode_Widget()
         self.piezoControlWidget = Piezo_Control_Widget()
+        # Setting the move function in manual mode
+        self.piezoControlWidget.updated.connect(lambda: self.movePiezo())
 
         # Create the several widgets for the Toolbar
         self.modeWidget = Mode_Widget(mode=self.mode)
@@ -80,9 +82,7 @@ class Main_Widget(QWidget):
         self.automaticModeWidget.parametersAutoModeWindow.saveParametersPushButton.clicked.connect(
             lambda: self.saveParameters())
 
-        # Setting the move function in manual mode
-        self.piezoControlWidget.ZAxis.slider.valueChanged.connect(lambda: self.movePiezo())
-        self.piezoControlWidget.FineZ.slider.valueChanged.connect(lambda: self.movePiezo())
+        
 
         # Setting the automatic start button 
         self.automaticModeWidget.startButton.clicked.connect(
@@ -202,13 +202,10 @@ class Main_Widget(QWidget):
         Method used to move the piezo in manual mode.
         """
         if self.hardwareConnectionWidget.piezoConnected:
-            self.hardwareConnectionWidget.piezo.movePosition(
-                self.piezoControlWidget.ZAxis.getValue(),
-                self.piezoControlWidget.FineZ.getValue()
-            )
-
-            ZAxis, FineZ = self.hardwareConnectionWidget.piezo.getPosition()
-            print(f"Piezo at : {ZAxis} um, {FineZ} nm")
+            value = self.piezoControlWidget.get_value()
+            value_um = int(value)
+            value_nm = int((value-value_um)*1000)
+            self.hardwareConnectionWidget.piezo.movePosition(value_um, value_nm)
 
     def directory_save(self):
         """
@@ -309,7 +306,7 @@ class Main_Widget(QWidget):
         else:
             filename = self.path + "/parameters.txt"
             destination_name = self.path + scan_dir+'/'+"parameters.txt"
-		# os.system('copy '+filename+' '+destination_name)
+        # os.system('copy '+filename+' '+destination_name)
 
     def saveParameters(self):
         """
