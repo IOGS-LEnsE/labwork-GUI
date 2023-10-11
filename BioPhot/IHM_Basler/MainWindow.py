@@ -91,9 +91,10 @@ class Main_Widget(QWidget):
         self.resetDMDPushButton.clicked.connect(lambda: self.DMDSettingsWidget.resetDMD())
 
         # Setting the utilisation mode of the application and launching the next updates
-        self.setMode()
+        
         self.modeWidget.toggle.stateChanged.connect(lambda: self.changeMode())
         '''
+        self.setMode()
         # Create and add the widgets into the layout
         layoutMain = QGridLayout()
 
