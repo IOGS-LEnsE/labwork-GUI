@@ -91,9 +91,9 @@ class Main_Widget(QWidget):
         self.resetDMDPushButton.clicked.connect(lambda: self.DMDSettingsWidget.resetDMD())
 
         # Setting the utilisation mode of the application and launching the next updates
-        self.setMode()
         self.modeWidget.toggle.stateChanged.connect(lambda: self.changeMode())
         '''
+        self.setMode()
         # Create and add the widgets into the layout
         layoutMain = QGridLayout()
 
@@ -112,14 +112,19 @@ class Main_Widget(QWidget):
         self.cameraWidget.launchVideo()
         self.timer = QTimer(self)
 
-        # Internal parameters
+        # Internal parameters / automatic mode
         self.z_init = 0
         self.z_final = 0
         self.z_step = 0
+        self.zs_list = []
         self.cam_expo = 0
         self.cam_FPS = 0
         self.cam_blacklevel = 0
         self.patterns = []
+
+        # automatic mode progression parameters
+        self.scan_index = 0
+        self.mire_index = 0
 
     # General methods used by the interface
     def initSettings(self):
@@ -166,11 +171,11 @@ class Main_Widget(QWidget):
             self.sensorSettingsWidget.setEnabled(True)
             self.hardwareConnectionWidget.setEnabled(True)
             self.DMDSettingsWidget.setEnabled(True)
-            self.automaticModeWidget.setEnabled(False)
+            self.automaticModeWidget.setEnabled(True)  # False ??
             self.piezoControlWidget.setEnabled(True)
             self.cameraWidget.setColor("blue")
             self.saveWidget.setMode(self.mode)
-            self.automaticModeWidget.parametersAutoModeWindow.setEnabled(False)
+            self.automaticModeWidget.parametersAutoModeWindow.setEnabled(True)  # False ??
             self.DMDSettingsWidget.patternChoiceWindowWidget1.setEnabled(True)
             self.DMDSettingsWidget.patternChoiceWindowWidget2.setEnabled(True)
             self.DMDSettingsWidget.patternChoiceWindowWidget3.setEnabled(True)
@@ -258,60 +263,35 @@ class Main_Widget(QWidget):
             if not self.hardwareConnectionWidget.piezo.isConnected():
                 return print("The HardWare for the Piezo is not connected : you must connect it first.")
 
-        z_init, z_final, z_step = parameters['Z Init'], parameters['Z Final'], parameters['Z Step']
+        self.z_init, self.z_final, self.z_step = parameters['Z Init'], parameters['Z Final'], parameters['Z Step']
 
         # Set the camera with the values of the parameter file
-        Exposure, FPS, BlackLevel = parameters['Exposure time'], parameters['FPS'], parameters['BlackLevel']
-        print(f'Expo Time = {Exposure}')
-        self.sensorSettingsWidget.exposureTime.setValue(Exposure * 1000)
-        self.sensorSettingsWidget.FPS.setValue(FPS)
+        self.cam_expo = parameters['Exposure time']
+        self.cam_FPS = parameters['FPS']
+        self.cam_blacklevel = parameters['BlackLevel']
+        print(f'Expo Time = {self.cam_expo}')
+        self.sensorSettingsWidget.exposureTime.setValue(int(self.cam_expo))
+        self.sensorSettingsWidget.FPS.setValue(self.cam_FPS)
 
         # Take the list of the Zs
-        zs_list = self.calculateZs(z_init, z_final, z_step)
+        self.zs_list = self.calculateZs(self.z_init, self.z_final, self.z_step)
 
         # Create a folder to save the scans
         scan_dir = self.createScanFolder()
 
-        for index, z in enumerate(zs_list):
-            print(f'Index = {index}')
-            z_axis, fine_z = z
-            self.hardwareConnectionWidget.piezo.movePosition(
-                z_axis, fine_z
-            )
+        self.patterns = parameters['Patterns']
+        print(self.patterns)
 
-            ZAxis, FineZ = self.hardwareConnectionWidget.piezo.getPosition()
-            print(f"Piezo at : {ZAxis} um, {FineZ} nm\n")
+        self.mode = "Automatic"
+        self.setMode()
+        self.scan_index = 0
+        self.mire_index = 0
+        self.automaticModeWidget.progressionBar.setValue(0)
 
-            # Save Image with pattern
-            for pattern in parameters['Patterns']:
-                pattern_number = pattern['Pattern Number']
-                pattern_path = pattern['Pattern Path']
-                
-                print(f'Patern PATH = {pattern_path}')
-                
-                self.DMDSettingsWidget.PatternLoad(pattern_path)
-                time.sleep(1)
-                self.cameraWidget.refreshGraph()
-                self.saveImage(pattern_number, index)
-
-            # Set up the progression bar
-            progression = 100 * (index + 1) // len(zs_list)
-            self.automaticModeWidget.progressionBar.setValue(progression)
-            self.printProgressBar(progression, 100, suffix="\n\n")
-        '''
-        self.timer.setInterval(5000)
-        self.timer.timeout.connect(lambda: self.setProgressBarTo0())
+        self.timer.setInterval(2500)
+        self.timer.timeout.connect(self.update_scan_data)
         self.timer.start()
-        '''
 
-        # COPY parameters.txt to SCAN_XX/parameters.txt
-        if self.path is None:
-            filename = "parameters.txt"
-            destination_name = scan_dir+'/'+"parameters.txt"
-        else:
-            filename = self.path + "/parameters.txt"
-            destination_name = self.path + scan_dir+'/'+"parameters.txt"
-        # os.system('copy '+filename+' '+destination_name)
 
     def saveParameters(self):
         """
@@ -489,32 +469,47 @@ class Main_Widget(QWidget):
 
         print(f"Array saved as : {ending_filename}\n")
 
-    def printProgressBar(self, iteration, total, prefix='', suffix='', decimals=1, length=50, fill='█'):
+    def update_scan_data(self):
         """
-        Method used to print a progression bar in the consol.
+        Method used to update data of an entire scan
+        """
+        if self.mode == "Automatic":
+            if self.scan_index < len(self.zs_list):
+                z_um, z_nm = self.zs_list[self.scan_index]
+                print(f'UM= {z_um} / NM = {z_nm}')
+                self.hardwareConnectionWidget.piezo.movePosition(z_um, z_nm)
 
-        Args:
-            iteration (int): represents the current iteration or progress.
-            total (int): represents the total number of iterations or the maximum value of the progress.
-            prefix (str, optional): is a string that appears before the progress bar.. Defaults to ''.
-            suffix (str, optional): is a string that appears after the progress bar. Defaults to ''.
-            decimals (int, optional): specifies the number of decimal places to display for the percentage.. Defaults to 1.
-            length (int, optional): determines the length of the progress bar in characters.. Defaults to 50.
-            fill (str, optional): is the character used to represent the progress.. Defaults to '█'.
-        """
-        percent = f'{(100 * (iteration / float(total))):.{decimals}f}'
-        filled_length = int(length * iteration // total)
-        bar = fill * filled_length + '-' * (length - filled_length)
-        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end='')
-        if iteration == total:
-            print("\n\n-------------------- Scan done. --------------------\n\n\n")
+                actual_pattern = self.patterns[self.mire_index]
+                actual_pattern_path = actual_pattern['Pattern Path']
+                self.DMDSettingsWidget.PatternLoad(actual_pattern_path)
+                time.sleep(1.2)
+                self.cameraWidget.refreshGraph()
+                self.saveImage(self.mire_index, self.scan_index)
 
-    def setProgressBarTo0(self):
-        """
-        Method used to set the progress bar to 0.
-        """
-        self.automaticModeWidget.progressionBar.setValue(0)
-        self.timer.stop
+                self.mire_index += 1
+                if self.mire_index == 3:
+                    self.mire_index = 0
+                    self.scan_index += 1
+
+                # Update progression bar
+                progression = 100 * (self.scan_index*3 + self.mire_index) // (3*len(self.zs_list))
+                self.automaticModeWidget.progressionBar.setValue(progression)
+
+            else:
+                self.mode = "Manual"
+                self.setMode()
+                self.timer.stop()
+
+                '''
+                # COPY parameters.txt to SCAN_XX/parameters.txt
+                if self.path is None:
+                    filename = "parameters.txt"
+                    destination_name = scan_dir + '/' + "parameters.txt"
+                else:
+                    filename = self.path + "/parameters.txt"
+                    destination_name = self.path + scan_dir + '/' + "parameters.txt"
+                # os.system('copy '+filename+' '+destination_name)
+                '''
 
 
 # -------------------------------------------------------------------------------------------------------

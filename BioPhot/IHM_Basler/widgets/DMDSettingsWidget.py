@@ -160,7 +160,6 @@ class DMD_Settings_Widget(QWidget):
         """
         if self.patternChoiceWindowWidget1.path != None:
             self.launchSequence([self.patternChoiceWindowWidget1.path])
-
             print(f"{self.getSmallText(self.patternChoiceWindowWidget1.path)} : loaded.\n")
 
     def PatternLoad2(self):
@@ -169,7 +168,6 @@ class DMD_Settings_Widget(QWidget):
         """
         if self.patternChoiceWindowWidget2.path != None:
             self.launchSequence([self.patternChoiceWindowWidget2.path])
-
             print(f"{self.getSmallText(self.patternChoiceWindowWidget2.path)} : loaded.\n")
 
     def PatternLoad3(self):
@@ -178,7 +176,6 @@ class DMD_Settings_Widget(QWidget):
         """
         if self.patternChoiceWindowWidget3.path != None:
             self.launchSequence([self.patternChoiceWindowWidget3.path])
-
             print(f"{self.getSmallText(self.patternChoiceWindowWidget3.path)} : loaded.\n")
 
     def PatternLoad(self, pattern_path):
@@ -189,7 +186,6 @@ class DMD_Settings_Widget(QWidget):
             patternPath (str): path of the pattern.
         """
         self.launchSequence([pattern_path])
-
         print(f"{self.getSmallText(pattern_path)} : loaded.\n")
 
     def resetPatternsLoaded(self):

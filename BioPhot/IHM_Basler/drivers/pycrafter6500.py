@@ -341,14 +341,13 @@ class dmd():
         sizes=[]
 
         for i in range((num-1)//24+1):
-            print ('merging...')
+            # Merging
             if i<((num-1)//24):
                 imagedata=arr[i*24:(i+1)*24]
             else:
                 imagedata=arr[i*24:]
-            print ('encoding...')
+            # Encoding
             imagedata,size=encode(imagedata)
-
             encodedimages.append(imagedata)
             sizes.append(size)
 
@@ -362,26 +361,17 @@ class dmd():
         self.configurelut(num,rep)
 
         for i in range((num-1)//24+1):
-        
             self.setbmp((num-1)//24-i,sizes[(num-1)//24-i])
-
-            print ('uploading...')
+            # Uploading
             self.bmpload(encodedimages[(num-1)//24-i],sizes[(num-1)//24-i])
-
-
-
-
 
 
 def launch_seq(path, dlp):
     images = []
-
     images.append((numpy.asarray(PIL.Image.open(path)) // 129))
-	
     number_of_images = len(images)
     
     dlp.stopsequence()
-
     dlp.changemode(3)
 
     exposure = [1000] * number_of_images
@@ -403,7 +393,6 @@ def launch_seq(path, dlp):
     """
 
     dlp.defsequence(images, exposure, trigger_in, dark_time, trigger_out, 0)
-
     dlp.startsequence()
 
 
@@ -411,16 +400,13 @@ if __name__ == '__main__':
     import numpy
     import PIL.Image
     import time
-    
 
     dlp = dmd()
 
-    
     path1 = r"..\MiresDMD\mires\mire 256\Mire256_pix_decalee_0_quarts.bmp"
     path2 = r"..\MiresDMD\mire_256\Mire_New.bmp"
     
     dlp.stopsequence()
 
     launch_seq(path1, dlp)
-    #time.sleep(2)
     launch_seq(path2, dlp)
