@@ -9,7 +9,7 @@ import time
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget, QFileDialog, QPushButton
 from PyQt6.QtCore import QTimer
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QCursor
 from widgets.CameraWidget import Camera_Widget
 from widgets.SensorSettingsWidget import Sensor_Settings_Widget
 from widgets.HardwareConnectionWidget import Hardware_Connection_Widget
@@ -511,6 +511,13 @@ class Main_Widget(QWidget):
                 # os.system('copy '+filename+' '+destination_name)
                 '''
 
+    def wheelEvent(self,event):
+        mouse_point = QCursor().pos()
+        print(f'Xm={mouse_point.x()} / Ym={mouse_point.y()}')
+        numPixels = event.pixelDelta();
+        numDegrees = event.angleDelta() / 8;
+        print(f'X={numPixels.x()} / Y={numPixels.y()}')
+        print(numDegrees)
 
 # -------------------------------------------------------------------------------------------------------
 
