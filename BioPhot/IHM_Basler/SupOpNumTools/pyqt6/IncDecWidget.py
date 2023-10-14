@@ -243,13 +243,14 @@ class IncDecWidget(QWidget):
         self.updated.emit('rst')
 
     def wheelEvent(self,event):
-        mouse_point = QCursor().pos()
-        # print(f'Xm={mouse_point.x()} / Ym={mouse_point.y()}')
-        numDegrees = event.angleDelta() / 8 / 15
-        if numDegrees.y() > 0:
-            self.increase_value()
-        elif numDegrees.y() < 0:
-            self.decrease_value()
+        if self.enabled:
+            mouse_point = QCursor().pos()
+            # print(f'Xm={mouse_point.x()} / Ym={mouse_point.y()}')
+            numDegrees = event.angleDelta() / 8 / 15
+            if numDegrees.y() > 0:
+                self.increase_value()
+            elif numDegrees.y() < 0:
+                self.decrease_value()
 
 
 # -----------------------------------------------------------------------------------------------
@@ -279,5 +280,6 @@ from PyQt6.QtWidgets import QApplication
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MyWindow()
+    main.incdec_widget.set_enabled(False)
     main.show()
     sys.exit(app.exec())
