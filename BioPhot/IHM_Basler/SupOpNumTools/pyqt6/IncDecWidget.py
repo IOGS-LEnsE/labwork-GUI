@@ -149,7 +149,7 @@ class IncDecWidget(QWidget):
 
     def increase_value(self):
         if self.limits is not None:
-            if self.real_value+self.ratio_gain < self.limits[1]:
+            if self.real_value+self.ratio_gain <= self.limits[1]:
                 self.real_value += self.ratio_gain
         else:
             self.real_value += self.ratio_gain
@@ -158,7 +158,7 @@ class IncDecWidget(QWidget):
 
     def decrease_value(self):
         if self.limits is not None:
-            if self.real_value-self.ratio_gain > self.limits[0]:
+            if self.real_value-self.ratio_gain >= self.limits[0]:
                 self.real_value -= self.ratio_gain
         else:
             self.real_value -= self.ratio_gain
@@ -251,7 +251,15 @@ class IncDecWidget(QWidget):
                 self.increase_value()
             elif numDegrees.y() < 0:
                 self.decrease_value()
+    def set_limits(self, limits):
+        '''
+        Sets the limits of the value of the widget
 
+        Args:
+            limits: list of float
+
+        '''
+        self.limits = limits
 
 # -----------------------------------------------------------------------------------------------
 # Only for testing
@@ -280,6 +288,7 @@ from PyQt6.QtWidgets import QApplication
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MyWindow()
-    main.incdec_widget.set_enabled(False)
+    # main.incdec_widget.set_enabled(False)
+    main.incdec_widget.set_limits([-2, 6.5])
     main.show()
     sys.exit(app.exec())
