@@ -16,7 +16,7 @@ Authors
 
 Use
 ---
-    >>> python TimeChartWidget.py
+    python TimeChartWidget.py
 """
 # PEP257 / PEP8 // OK
 
@@ -83,7 +83,6 @@ class MyWindow(QMainWindow):
         self.centralWid = QWidget()
         self.layout = QVBoxLayout()
         
-        
         self.chart_widget = TimeChartWidget()
         self.chart_widget.set_title('My Super Chart')
         self.chart_widget.set_information('This is a test')
@@ -107,5 +106,9 @@ from PyQt6.QtWidgets import QApplication
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MyWindow()
+    x_axis = np.linspace(0,1,1001)
+    y_axis = np.sin(10*x_axis)
+    main.chart_widget.set_data(x_axis, y_axis)
+    main.chart_widget.refresh_chart()
     main.show()
     sys.exit(app.exec())
