@@ -23,13 +23,12 @@ import sys
 import numpy
 
 # Third pary imports
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QLineEdit
-from PyQt6.QtWidgets import (QHBoxLayout, QGridLayout, QVBoxLayout,
-                    QLabel, QPushButton, QMessageBox, QCheckBox, QComboBox)
-from PyQt6.QtCore import QTimer, pyqtSignal, Qt
+from PyQt6.QtWidgets import QMainWindow, QWidget, QLineEdit
+from PyQt6.QtWidgets import (QGridLayout, QVBoxLayout,
+                    QLabel, QPushButton, QMessageBox, QComboBox)
+from PyQt6.QtGui import QCursor
 
-from PyQt6.QtCore import Qt, pyqtSignal, QObject, QRect
-from pyqtgraph import PlotWidget, plot, mkPen
+from PyQt6.QtCore import Qt, pyqtSignal
 
 styleH1 = "font-size:16px; padding:7px; color:Navy; border-top: 1px solid Navy;"
 styleH = "font-size:14px; padding:4px; color:Navy; font-weight:bold;"
@@ -150,7 +149,7 @@ class IncDecWidget(QWidget):
 
     def increase_value(self):
         if self.limits is not None:
-            if self.real_value+self.ratio_gain < self.limits[1]:
+            if self.real_value+self.ratio_gain <= self.limits[1]:
                 self.real_value += self.ratio_gain
         else:
             self.real_value += self.ratio_gain
@@ -159,7 +158,7 @@ class IncDecWidget(QWidget):
 
     def decrease_value(self):
         if self.limits is not None:
-            if self.real_value-self.ratio_gain > self.limits[0]:
+            if self.real_value-self.ratio_gain >= self.limits[0]:
                 self.real_value -= self.ratio_gain
         else:
             self.real_value -= self.ratio_gain
@@ -243,6 +242,24 @@ class IncDecWidget(QWidget):
         self.update_display()
         self.updated.emit('rst')
 
+    def wheelEvent(self,event):
+        if self.enabled:
+            mouse_point = QCursor().pos()
+            # print(f'Xm={mouse_point.x()} / Ym={mouse_point.y()}')
+            numDegrees = event.angleDelta() / 8 / 15
+            if numDegrees.y() > 0:
+                self.increase_value()
+            elif numDegrees.y() < 0:
+                self.decrease_value()
+    def set_limits(self, limits):
+        '''
+        Sets the limits of the value of the widget
+
+        Args:
+            limits: list of float
+
+        '''
+        self.limits = limits
 
 # -----------------------------------------------------------------------------------------------
 # Only for testing
@@ -271,5 +288,7 @@ from PyQt6.QtWidgets import QApplication
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = MyWindow()
+    # main.incdec_widget.set_enabled(False)
+    main.incdec_widget.set_limits([-2, 6.5])
     main.show()
     sys.exit(app.exec())

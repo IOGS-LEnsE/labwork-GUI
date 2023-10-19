@@ -17,7 +17,7 @@ Authors
 
 Use
 ---
-    >>> python TargetWidget.py
+    python TargetWidget.py
 """
 
 # Libraries to import
