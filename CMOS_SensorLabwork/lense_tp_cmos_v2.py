@@ -24,11 +24,6 @@ TO DO
 
 """
 
-''' SEE : 
-https://www.pythonguis.com/tutorials/plotting-pyqtgraph/
-
-'''
-
 import sys
 import os
 import cv2
