@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
+"""PyQt6 Widget for CMOS Sensor Display - worked with IDS and Basler camera
+
+.. module:: CameraWidget
+   :synopsis: A useful module indeed.
+
+.. note:: LEnsE - Institut d'Optique - version 0.1
+
+.. moduleauthor:: Julien VILLEMEJANE <julien.villemejane@institutoptique.fr>
+
+.. note:: Deprecated / Use :class:`camera.cameraIDSdisplayQt6`
+
 """
-CameraWidget for CMOS Sensor Display
-
-/!\ Only for IDS USB 2.0 CMOS camera
-Based on pyueye library
-
---------------------------
-(c) LEnsE - Institut d'Optique
-
-Created on Sun Jul  2 09:30:45 2023
-
-@author: Julien VILLEMEJANE
-First work by Romain ETIENNE (June 2023 - Intern at LEnsE)
-"""
-# PEP257 / PEP8 // NOT OK
-
-
 
 # Standard
 import numpy as np

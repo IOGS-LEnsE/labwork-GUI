@@ -37,7 +37,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt6.QtWidgets import QGridLayout
 from PyQt6.QtWidgets import QLabel, QFileDialog
 
-import SupOpNumTools.camera.cameraIDSdisplayQt6 as camDisp
+import SupOpNumTools.pyqt6.CameraIDSdisplayQt6 as camDisp
 import SupOpNumTools.camera.cameraIDS as camIDS
 from CMOSMenu import CMOSMenu, progress_bar_style
 from SupOpNumTools.pyqt6.HistWidget import HistWidget
