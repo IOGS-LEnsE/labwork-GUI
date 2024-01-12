@@ -4,4 +4,6 @@ pandas
 pillow
 scipy
 control
+pyqt6
+pyqt5
 pyqtgraph
