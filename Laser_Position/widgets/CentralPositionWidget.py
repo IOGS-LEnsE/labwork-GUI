@@ -18,14 +18,16 @@ Authors
 
 Use
 ---
-    >>> python CentralPositionWidget.py
+python CentralPositionWidget.py
 """
 
 # Libraries to import
 import sys
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QVBoxLayout
-from PyQt6.QtWidgets import QPushButton, QLabel
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QGridLayout, QVBoxLayout,
+    QPushButton, QLabel, QLineEdit
+)
 from PyQt6.QtGui import QColor
 from PyQt6.QtCore import pyqtSignal, Qt
 
@@ -89,29 +91,30 @@ class CentralPositionWidget(QWidget):
 
         self.x_limit_min_button = QPushButton('Xmin = ')
         self.x_limit_min_button.clicked.connect(self.x_limit_min_action)
-        self.x_limit_min_label = QLabel('')
-        self.x_limit_min_label.setStyleSheet('background:orange;')
+        self.x_limit_min_label = QLineEdit(self)
+        self.x_limit_min_label.editingFinished.connect(self.action_editing_finished)
+        self.x_limit_min_label.setStyleSheet('background:orange; color:black;')
         self.control_layout.addWidget(self.x_limit_min_button, 1, 0)
         self.control_layout.addWidget(self.x_limit_min_label, 1, 1)
 
         self.x_limit_max_button = QPushButton('Xmax = ')
         self.x_limit_max_button.clicked.connect(self.x_limit_max_action)
-        self.x_limit_max_label = QLabel('')
-        self.x_limit_max_label.setStyleSheet('background:orange;')
+        self.x_limit_max_label = QLineEdit('')
+        self.x_limit_max_label.setStyleSheet('background:orange; color:black;')
         self.control_layout.addWidget(self.x_limit_max_button, 2, 0)
         self.control_layout.addWidget(self.x_limit_max_label, 2, 1)
 
         self.y_limit_min_button = QPushButton('Ymin = ')
         self.y_limit_min_button.clicked.connect(self.y_limit_min_action)
-        self.y_limit_min_label = QLabel('')
-        self.y_limit_min_label.setStyleSheet('background:orange;')
+        self.y_limit_min_label = QLineEdit('')
+        self.y_limit_min_label.setStyleSheet('background:orange; color:black;')
         self.control_layout.addWidget(self.y_limit_min_button, 3, 0)
         self.control_layout.addWidget(self.y_limit_min_label, 3, 1)
 
         self.y_limit_max_button = QPushButton('Ymax = ')
         self.y_limit_max_button.clicked.connect(self.y_limit_max_action)
-        self.y_limit_max_label = QLabel('')
-        self.y_limit_max_label.setStyleSheet('background:orange;')
+        self.y_limit_max_label = QLineEdit('')
+        self.y_limit_max_label.setStyleSheet('background:orange; color:black;')
         self.control_layout.addWidget(self.y_limit_max_button, 4, 0)
         self.control_layout.addWidget(self.y_limit_max_label, 4, 1)
 
@@ -143,6 +146,13 @@ class CentralPositionWidget(QWidget):
         self.layout.setRowStretch(0, 1)
         self.layout.setRowStretch(1, 1)
         self.setLayout(self.layout)
+
+    def action_editing_finished(self):
+        """Action performed when editing is finished."""
+        sender = self.sender()
+        if sender == self.x_limit_min_label:
+            x_min = self.x_limit_min_label.text()
+            print(f'X MIN = {x_min}')
 
     def update_action(self):
         nuc_board = self.parent.get_nucleo_board()

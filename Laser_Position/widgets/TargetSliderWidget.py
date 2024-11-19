@@ -17,7 +17,7 @@ Authors
 
 Use
 ---
-    >>> python TargetSliderWidget.py
+python TargetSliderWidget.py
 """
 
 # Libraries to import
@@ -124,7 +124,7 @@ class TargetSliderWidget(QWidget):
     def refresh_graph(self):
         self.target_scan_x_value.setText('X = '+str(self.pos_x))
         self.target_scan_y_value.setText('Y = '+str(self.pos_y))
-        self.target_slider.set_position(int(self.pos_x), int(self.pos_y))
+        self.target_slider.set_position(int(self.pos_x), -int(self.pos_y))
         self.refresh_target()
 
     def refresh_target(self):

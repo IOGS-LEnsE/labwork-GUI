@@ -18,7 +18,7 @@ Authors
 
 Use
 ---
-    >>> python ScannerWidget.py
+python ScannerWidget.py
 """
 
 # Libraries to import
