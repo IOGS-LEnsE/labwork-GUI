@@ -20,7 +20,7 @@ Authors
 
 Use
 ---
-    >>> python MainWindow.py
+python MainWindow.py
 """
 
 # Libraries to import
