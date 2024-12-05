@@ -29,6 +29,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QGridLayout, QVB
 from PyQt6.QtWidgets import QPushButton, QLabel, QComboBox
 from PyQt6.QtGui import QColor
 from PyQt6.QtCore import pyqtSignal, Qt
+from matplotlib import pyplot as plt
 
 from SupOpNumTools.pyqt6.XYChartWidget import XYChartWidget
 
@@ -104,6 +105,15 @@ class OpenLoopWidget(QWidget):
         self.data_ready_label.setStyleSheet(not_style)
         self.control_layout.addWidget(self.data_ready_label, 3, 1)
 
+        self.x_button = QPushButton('X Step Response')
+        self.x_button.setEnabled(False)
+        self.x_button.clicked.connect(self.xy_select_action)
+        self.control_layout.addWidget(self.x_button, 4, 0)
+        self.y_button = QPushButton('Y Step Response')
+        self.y_button.setEnabled(False)
+        self.y_button.clicked.connect(self.xy_select_action)
+        self.control_layout.addWidget(self.y_button, 4, 1)
+
         self.layout.addWidget(self.control_widget, 0, 0)
 
         self.camera_widget = QWidget()
@@ -128,25 +138,56 @@ class OpenLoopWidget(QWidget):
         self.data_ready_label.setText('IN PROGRESS')
         self.data_ready_label.setStyleSheet('background:orange;color:white;')
 
+    def xy_select_action(self):
+        """Action performed when X or Y step response is selected."""
+        sender = self.sender()
+        if sender == self.x_button:
+            self.x_button.setStyleSheet(active_style)
+            self.y_button.setStyleSheet(valid_style)
+            self.update_graph(x_or_y='x')
+        elif sender == self.y_button:
+            self.y_button.setStyleSheet(active_style)
+            self.x_button.setStyleSheet(valid_style)
+            self.update_graph(x_or_y='y')
+
     def refresh_graph(self):
         nuc_board = self.parent.get_nucleo_board()
         self.x_data, self.y_data, self.s_data = nuc_board.get_open_loop_data()
-        fs, _ = self.get_fs_ns()
-        t_data = numpy.linspace(0, (len(self.x_data)-1)/fs, len(self.x_data))
-        self.graph_widget.set_data(t_data*1000, self.x_data,
-                                   'Time (ms)', 'Response (ADU)')
-        self.graph_widget.enable_chart()
-        self.graph_widget.refresh_chart()
-        return t_data, self.y_data, fs
+        self.fs, _ = self.get_fs_ns()
+        self.update_graph(x_or_y='x')
+        return self.x_data, self.y_data, self.fs
+
+    def update_graph(self, x_or_y: str = 'x'):
+        """Update the graph with the X or Y step response."""
+        if x_or_y == 'x':
+            t_data = numpy.linspace(0, (len(self.x_data) - 1) / self.fs, len(self.x_data))
+            self.graph_widget.set_data(t_data * 1000, self.x_data,
+                                       'Time (ms)', 'Response (ADU)')
+            self.graph_widget.enable_chart()
+            self.graph_widget.refresh_chart()
+        elif x_or_y == 'y':
+            t_data = numpy.linspace(0, (len(self.y_data) - 1) / self.fs, len(self.y_data))
+            self.graph_widget.set_data(t_data * 1000, self.y_data,
+                                       'Time (ms)', 'Response (ADU)')
+            self.graph_widget.enable_chart()
+            self.graph_widget.refresh_chart()
 
     def set_data_ready(self, value):
         self.data_ready = value
         if value:
             self.data_ready_label.setText('DATA OK')
             self.data_ready_label.setStyleSheet(valid_style)
+            self.x_button.setEnabled(True)
+            self.x_button.setStyleSheet(active_style)
+            self.y_button.setEnabled(True)
+            self.y_button.setStyleSheet(valid_style)
         else:
             self.data_ready_label.setText('NO DATA')
             self.data_ready_label.setStyleSheet(not_style)
+            self.x_button.setEnabled(False)
+            self.y_button.setEnabled(False)
+            self.x_button.setStyleSheet(not_style)
+            self.y_button.setStyleSheet(not_style)
 
     def set_data(self, x_data, y_data, fs):
         self.x_data = x_data
@@ -157,11 +198,13 @@ class OpenLoopWidget(QWidget):
         #nb_samples = int(self.samples_combo.currentText())
         #sampling_f = int(self.sampling_combo.currentText())
 
-        t_data = numpy.linspace(0, (len(self.x_data) - 1) / fs, len(self.x_data))
-        self.graph_widget.set_data(t_data * 1000, self.x_data,
-                                   'Time (ms)', 'Response (ADU)')
-        self.graph_widget.enable_chart()
-        self.graph_widget.refresh_chart()
+        self.update_graph(x_or_y='x')
+        self.data_ready_label.setText('DATA OK')
+        self.data_ready_label.setStyleSheet(valid_style)
+        self.x_button.setEnabled(True)
+        self.y_button.setEnabled(True)
+        self.x_button.setStyleSheet(active_style)
+        self.y_button.setStyleSheet(valid_style)
 
 
     def get_fs_ns(self):

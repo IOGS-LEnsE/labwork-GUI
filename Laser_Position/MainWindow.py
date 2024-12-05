@@ -29,6 +29,8 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QWidget
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QTimer
+from matplotlib import pyplot as plt
+
 from widgets.MainMenu import MainMenu
 from widgets.IntroductionWidget import IntroductionWidget
 from widgets.PhotodiodeWidget import PhotodiodeWidget
