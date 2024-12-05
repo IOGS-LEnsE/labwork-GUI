@@ -98,7 +98,7 @@ class IncDecWidget(QWidget):
         self.dec_button.setStyleSheet("background:#3EE4FD;font-size:14px; font-weight:bold;")
 
         self.gain_combo = QComboBox()
-        self.values_combo = ['0.001', '0.01', '0.1', '1', '10', '100', '1000']
+        self.values_combo = ['0.001', '0.01', '0.1', '1', '10']
         if values is None :
             self.gain_combo.addItems(self.values_combo)
         else:

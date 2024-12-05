@@ -123,10 +123,9 @@ class CentralPositionWidget(QWidget):
         self.checked_label.setStyleSheet('background:orange;')
         self.control_layout.addWidget(self.checked_label, 5, 0, 1, 2)
 
-        self.update_button = QPushButton('Transfer to Hardware')
-        self.update_button.setEnabled(False)
-        self.update_button.clicked.connect(self.update_action)
-        self.control_layout.addWidget(self.update_button, 6, 0, 1, 2)
+        self.set_default_button = QPushButton('Set default values')
+        self.set_default_button.clicked.connect(self.set_default_action)
+        self.control_layout.addWidget(self.set_default_button, 6, 0, 1, 2)
 
         self.layout.addWidget(self.control_widget, 0, 0)
 
@@ -154,6 +153,34 @@ class CentralPositionWidget(QWidget):
             x_min = self.x_limit_min_label.text()
             print(f'X MIN = {x_min}')
 
+    def set_default_action(self):
+        """
+        """
+        self.x_limit_min = -0.2
+        self.x_limit_min_label.setText(str(self.x_limit_min))
+        self.x_limit_min_label.setStyleSheet('')
+        self.x_limit_min_label.setStyleSheet('font-weight:bold;')
+        self.x_limit_min_set = True
+
+        self.x_limit_max = 0.2
+        self.x_limit_max_label.setText(str(self.x_limit_max))
+        self.x_limit_max_label.setStyleSheet('')
+        self.x_limit_max_label.setStyleSheet('font-weight:bold;')
+        self.x_limit_max_set = True
+
+        self.y_limit_min = -0.2
+        self.y_limit_min_label.setText(str(self.y_limit_min))
+        self.y_limit_min_label.setStyleSheet('')
+        self.y_limit_min_label.setStyleSheet('font-weight:bold;')
+        self.y_limit_min_set = True
+
+        self.y_limit_max = 0.2
+        self.y_limit_max_label.setText(str(self.y_limit_max))
+        self.y_limit_max_label.setStyleSheet('')
+        self.y_limit_max_label.setStyleSheet('font-weight:bold;')
+        self.y_limit_max_set = True
+        self.check_limits()
+
     def update_action(self):
         nuc_board = self.parent.get_nucleo_board()
         nuc_board.set_open_loop_steps(self.x_limit_min, self.y_limit_min, self.x_limit_max, self.y_limit_max)
@@ -164,7 +191,8 @@ class CentralPositionWidget(QWidget):
             print('target_ reset')
 
     def check_limits(self):
-        limits = self.y_limit_min_set and self.y_limit_max_set and self.x_limit_min_set and self.x_limit_max_set
+        limits = (self.y_limit_min_set and self.y_limit_max_set
+                  and self.x_limit_min_set and self.x_limit_max_set)
         if limits:
             if self.y_limit_min > self.y_limit_max: # Swap
                 self.y_limit_min, self.y_limit_max = self.y_limit_max, self.y_limit_min
@@ -174,10 +202,9 @@ class CentralPositionWidget(QWidget):
                 self.x_limit_min, self.x_limit_max = self.x_limit_max, self.x_limit_min
                 self.x_limit_min_label.setText(str(self.x_limit_min))
                 self.x_limit_max_label.setText(str(self.x_limit_max))
-            print('ok')
             self.checked_label.setText('VALID')
+            self.update_action()
             self.checked_label.setStyleSheet('background:'+ ACTIVE_COLOR+';font-weight:bold;')
-            self.update_button.setEnabled(True)
 
     def x_limit_min_action(self):
         x, y = self.get_scanner_position()

@@ -68,7 +68,9 @@ class MainWindow(QMainWindow):
         self.step_position_y_min = 0
         self.step_position_y_max = 0
         # Step response
-
+        self.step_x = None
+        self.step_y = None
+        self.step_fs = 0
         # Define Window title
         self.setWindowTitle("Laser Position Control")
         self.setWindowIcon(QIcon('_inc/IOGS-LEnsE-logo.jpg'))
@@ -148,7 +150,8 @@ class MainWindow(QMainWindow):
             if self.nucleo_board.is_step_over():
                 self.main_timer.stop()
                 self.central_widget.set_data_ready(True)
-                self.central_widget.refresh_graph()
+                self.step_x, self.step_y, self.step_fs = self.central_widget.refresh_graph()
+
         elif self.mode == 'R':
             # Check new values and transfer to PID hardware
             k_x, k_y, i_x, i_y, d_x, d_Y, sampling = self.central_widget.get_PID_parameters()
@@ -220,6 +223,9 @@ class MainWindow(QMainWindow):
             self.central_widget.step_response.connect(self.open_loop_action)
             self.update_layout(self.central_widget)
             self.main_timer.setInterval(200)
+            if self.step_x is not None and self.step_y is not None:
+                self.main_timer.stop()
+                self.central_widget.set_data(self.step_x, self.step_y, self.step_fs)
         elif e == 'R': # PID control
             self.mode = 'R'
             self.main_timer.stop()

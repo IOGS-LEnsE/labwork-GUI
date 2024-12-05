@@ -21,8 +21,8 @@ Use
     >>> python PIDWidget.py
 """
 
-# Libraries to import
 import sys
+import time
 
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget,  QVBoxLayout, QGridLayout
 from PyQt6.QtWidgets import QLabel, QCheckBox, QComboBox
@@ -94,21 +94,21 @@ class PIDWidget(QWidget):
         self.title_y_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.title_y_label, 1, 1)
 
-        self.P_X_inc_dec = IncDecWidget('Proportional Gain')
+        self.P_X_inc_dec = IncDecWidget('Proportional Gain', limits=[0, 100])
         self.P_X_inc_dec.updated.connect(self.updated_action)
         self.layout.addWidget(self.P_X_inc_dec, 2, 0)
-        self.I_X_inc_dec = IncDecWidget('Integral Factor')
+        self.I_X_inc_dec = IncDecWidget('Integral Factor', limits=[0, 100])
         self.I_X_inc_dec.updated.connect(self.updated_action)
         self.layout.addWidget(self.I_X_inc_dec, 3, 0)
-        self.D_X_inc_dec = IncDecWidget('Derivative Factor')
+        self.D_X_inc_dec = IncDecWidget('Derivative Factor', limits=[0, 100])
         self.D_X_inc_dec.updated.connect(self.updated_action)
         self.layout.addWidget(self.D_X_inc_dec, 4, 0)
 
-        self.P_Y_inc_dec = IncDecWidget('Proportional Gain')
+        self.P_Y_inc_dec = IncDecWidget('Proportional Gain', limits=[0, 100])
         self.layout.addWidget(self.P_Y_inc_dec, 2, 1)
-        self.I_Y_inc_dec = IncDecWidget('Integral Factor')
+        self.I_Y_inc_dec = IncDecWidget('Integral Factor', limits=[0, 100])
         self.layout.addWidget(self.I_Y_inc_dec, 3, 1)
-        self.D_Y_inc_dec = IncDecWidget('Derivative Factor')
+        self.D_Y_inc_dec = IncDecWidget('Derivative Factor', limits=[0, 100])
         self.layout.addWidget(self.D_Y_inc_dec, 4, 1)
 
         self.x_inverse_check = QCheckBox('Invert X')
@@ -128,6 +128,7 @@ class PIDWidget(QWidget):
             self.P_Y_inc_dec.set_value(self.P_X_inc_dec.get_real_value())
             self.I_Y_inc_dec.set_value(self.I_X_inc_dec.get_real_value())
             self.D_Y_inc_dec.set_value(self.D_X_inc_dec.get_real_value())
+            time.sleep(0.01)
 
     def x_equal_y_action(self):
         if self.x_equal_y_check.checkState() == Qt.CheckState.Checked:

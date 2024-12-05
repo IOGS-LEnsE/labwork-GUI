@@ -68,6 +68,7 @@ class OpenLoopWidget(QWidget):
         self.x_data = None
         self.y_data = None
         self.s_data = None
+        self.fs = None
 
         self.layout = QGridLayout()
 
@@ -112,7 +113,7 @@ class OpenLoopWidget(QWidget):
         # Graphe
         self.graph_widget = XYChartWidget()
         self.graph_widget.set_title('Step Response')
-        self.graph_widget.set_information('This is a test')
+        self.graph_widget.set_information('Step Response of the system')
         self.graph_widget.set_background('white')
         self.layout.addWidget(self.graph_widget, 1, 0, 1, 2)
 
@@ -130,11 +131,13 @@ class OpenLoopWidget(QWidget):
     def refresh_graph(self):
         nuc_board = self.parent.get_nucleo_board()
         self.x_data, self.y_data, self.s_data = nuc_board.get_open_loop_data()
-        print(f'SHAPE X_DATA = {self.x_data.shape}')
-        t_data = numpy.linspace(0, len(self.x_data)-1, len(self.x_data))
-        self.graph_widget.set_data(t_data, self.x_data)
+        fs, _ = self.get_fs_ns()
+        t_data = numpy.linspace(0, (len(self.x_data)-1)/fs, len(self.x_data))
+        self.graph_widget.set_data(t_data*1000, self.x_data,
+                                   'Time (ms)', 'Response (ADU)')
         self.graph_widget.enable_chart()
         self.graph_widget.refresh_chart()
+        return t_data, self.y_data, fs
 
     def set_data_ready(self, value):
         self.data_ready = value
@@ -144,6 +147,22 @@ class OpenLoopWidget(QWidget):
         else:
             self.data_ready_label.setText('NO DATA')
             self.data_ready_label.setStyleSheet(not_style)
+
+    def set_data(self, x_data, y_data, fs):
+        self.x_data = x_data
+        self.y_data = y_data
+        self.fs = fs
+        # find index of fs and update !
+        # find index of nb_samples and update !
+        #nb_samples = int(self.samples_combo.currentText())
+        #sampling_f = int(self.sampling_combo.currentText())
+
+        t_data = numpy.linspace(0, (len(self.x_data) - 1) / fs, len(self.x_data))
+        self.graph_widget.set_data(t_data * 1000, self.x_data,
+                                   'Time (ms)', 'Response (ADU)')
+        self.graph_widget.enable_chart()
+        self.graph_widget.refresh_chart()
+
 
     def get_fs_ns(self):
         nb_samples = int(self.samples_combo.currentText())

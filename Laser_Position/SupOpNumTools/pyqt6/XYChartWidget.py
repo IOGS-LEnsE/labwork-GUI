@@ -27,13 +27,7 @@ import sys
 # Third pary imports
 from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel
 from PyQt6.QtCore import Qt
-from pyqtgraph import PlotWidget
-
-
-# Local libraries
-
-
-# -----------------------------------------------------------------------------------------------
+from pyqtgraph import PlotWidget, mkPen
 
 class XYChartWidget(QWidget):
     """
@@ -97,12 +91,16 @@ class XYChartWidget(QWidget):
         # Create Numpy array for X and Y data
         self.plot_x_data = np.array([])
         self.plot_y_data = np.array([])
+        self.x_label = ''
+        self.y_label = ''
 
         # No data at initialization
-        self.plot_chart = self.plot_chart_widget.plot([0])
+        self.pen = mkPen(color=(200, 0, 255), style=Qt.PenStyle.SolidLine, width=4.5)
+        self.plot_chart = self.plot_chart_widget.plot([0], pen=self.pen)
+
         self.setLayout(self.layout)
 
-    def set_data(self, x_axis, y_axis):
+    def set_data(self, x_axis, y_axis, x_label: str = '', y_label: str = ''):
         """
         Set the X and Y axis data to display on the chart.
 
@@ -120,6 +118,8 @@ class XYChartWidget(QWidget):
         """
         self.plot_x_data = x_axis
         self.plot_y_data = y_axis
+        self.x_label = x_label
+        self.y_label = y_label
 
     def refresh_chart(self):
         """
@@ -132,7 +132,20 @@ class XYChartWidget(QWidget):
         """
         self.plot_chart_widget.removeItem(self.plot_chart)
         self.plot_chart = self.plot_chart_widget.plot(self.plot_x_data,
-                                                      self.plot_y_data)
+                                                      self.plot_y_data,
+                                                      pen=self.pen)
+        x_axis = self.plot_chart_widget.getPlotItem().getAxis('bottom')
+        x_size = len(self.plot_x_data)
+        Te = self.plot_x_data[1]-self.plot_x_data[0]
+        xTicks = [x_size/20*Te, x_size/100*Te]
+        x_axis.setTickSpacing(xTicks[0], xTicks[1])
+        # set x ticks (major and minor)
+        self.plot_chart_widget.showGrid(x=True, y=True)
+        styles = {"color": "black", "font-size": "18px"}
+        if self.y_label != '':
+            self.plot_chart_widget.setLabel("left", self.y_label, **styles)
+        if self.x_label != '':
+            self.plot_chart_widget.setLabel("bottom", self.x_label, **styles)
 
     def update_infos(self, val=True):
         """
