@@ -128,7 +128,7 @@ class PIDWidget(QWidget):
             self.P_Y_inc_dec.set_value(self.P_X_inc_dec.get_real_value())
             self.I_Y_inc_dec.set_value(self.I_X_inc_dec.get_real_value())
             self.D_Y_inc_dec.set_value(self.D_X_inc_dec.get_real_value())
-            time.sleep(0.01)
+            time.sleep(0.1)
 
     def x_equal_y_action(self):
         if self.x_equal_y_check.checkState() == Qt.CheckState.Checked:
